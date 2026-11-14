@@ -198,8 +198,7 @@
             <button class="menu-btn" onclick="switchTab('sec-admins', this, event)">👤 11. Kelola Admin</button>
         </div>
         <div class="sidebar-footer">
-            <a href="https://photoboxohsnapaplikasi-glitch.github.io/ohsnap-frontend/" id="viewFrontendLink" target="_blank" class="btn-view-site">🌐 Lihat Website Frontend</a>
-            <script>if(location.hostname.endsWith("ohsnap.web.id")){document.getElementById("viewFrontendLink").href="https://ohsnap.web.id";}</script>
+            <a href="https://ohsnap.web.id" id="viewFrontendLink" target="_blank" class="btn-view-site">🌐 Lihat Website Frontend</a>
             <button class="btn-logout" onclick="logoutAdmin()">🚪 Keluar (Logout)</button>
         </div>
     </aside>
@@ -471,9 +470,6 @@
             }
         })();
 
-        // URL Apps Script diatur terpusat di cms-cloud.js (SHEET_SCRIPT_URL)
-
-        // Helper agar tanda kutip ganda (") di dalam input tidak memotong teks HTML
         function escAttr(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -1488,9 +1484,6 @@
             loadColors(); saveAllCMS(); showToast('🔄 Warna dikembalikan ke default!');  
         }
 
-        // ==========================================
-        // 10. RESEND SOFTCOPY (TERHUBUNG LANGSUNG KE GOOGLE SPREADSHEET)
-        // ==========================================
         let resendList = [];
 
         function showResendError(msg) {
@@ -1514,7 +1507,6 @@
 
                 const data = await OhSnapCloud.sheetFetch('GET', { token: tok });
 
-                // Apps Script mengirim objek {status:'unauthorized'|'error', message} bila ditolak/gagal
                 if (data && !Array.isArray(data)) {
                     if (data.status === 'unauthorized') throw new Error(data.message || 'Akses ditolak oleh Apps Script. Coba login ulang.');
                     if (data.status === 'error') throw new Error(data.message || 'Apps Script melaporkan error.');
@@ -1530,7 +1522,6 @@
                 showToast('✅ Data Spreadsheet berhasil diperbarui! (' + resendList.length + ' data)');
             } catch (e) {
                 console.error('Gagal mengambil data Spreadsheet:', e);
-                // Jangan kosongkan tabel bila sebelumnya sudah ada data (refresh gagal ≠ data hilang)
                 showResendError(e && e.message ? e.message : String(e));
                 renderResendTable();
                 showToast('⚠️ Gagal mengambil data Spreadsheet');
@@ -1815,7 +1806,6 @@
             updateFooterState();
             if (autoCloudSyncTimer) { clearTimeout(autoCloudSyncTimer); autoCloudSyncTimer = null; }
 
-            // Cegah simpan manual dari data basi saat Cloud sebelumnya gagal dimuat (temuan #4)
             if (!isCloudReady) {
                 setSyncBadge('wait', '⏳ Memeriksa Cloud...');
                 try {
@@ -1858,7 +1848,7 @@
                     await logoutAdmin();
                 } else if (err && err.status) {
                     const hint = (err.status === 403) ? ' - cek RLS/policy & jalankan supabase-setup.sql' :
-                                 (err.status === 404) ? ' - jalankan supabase-setup.sql terbaru di Supabase' : '';
+                                   (err.status === 404) ? ' - jalankan supabase-setup.sql terbaru di Supabase' : '';
                     showToast('⚠️ Server menolak (' + err.status + ')' + hint);
                 } else {
                     showToast('⚠️ Tidak bisa menjangkau server cloud (jaringan/DNS/diblokir/project Supabase pause)');
