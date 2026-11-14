@@ -144,7 +144,7 @@
     </style>
     <script src="cms-cloud.js"></script>
     <script>
-        // GERBANG PROTEKSI KETAT: Tolak akses ketik URL manual tanpa lewat login.html
+        // GERBANG PROTEKSI KETAT: Tolak akses ketik URL manual tanpa lewat halaman login
         (function() {
             localStorage.removeItem('ohsnap_admin_logged');
 
@@ -167,7 +167,7 @@
                 sessionStorage.removeItem('ohsnap_admin_active');
                 sessionStorage.removeItem('ohsnap_login_ticket');
                 document.documentElement.style.display = 'none';
-                window.location.replace('login.html');
+                window.location.replace('./');
             }
         })();
     </script>
@@ -450,7 +450,7 @@
     <script>
         // Proteksi Login Admin
         if (!sessionStorage.getItem('ohsnap_admin_logged')) {
-            window.location.replace('login.html');
+            window.location.replace('./');
         }
 
         (function() {
@@ -1888,7 +1888,7 @@
             if (tok) {
                 await OhSnapCloud.logoutAdminSession(tok);
             }
-            window.location.replace('login.html');
+            window.location.replace('./');
         }
 
         function initAllRenders() {
