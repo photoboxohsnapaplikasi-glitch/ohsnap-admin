@@ -828,6 +828,12 @@
             if (sectionId === 'sec-admins') {
                 clearNewAdminInputs();
             }
+            if (sectionId === 'sec-resend') {
+                renderResendTable();
+                if ((!resendList || resendList.length === 0) && !resendLoading) {
+                    loadResendData();
+                }
+            }
             if (event) event.preventDefault();
         }
 
@@ -1484,31 +1490,81 @@
             loadColors(); saveAllCMS(); showToast('🔄 Warna dikembalikan ke default!');  
         }
 
-        let resendList = [];
+        const RESEND_CACHE_KEY = 'ohsnap_resend_cache';
 
-        function showResendError(msg) {
+        function loadCachedResendList() {
+            try {
+                const raw = sessionStorage.getItem(RESEND_CACHE_KEY);
+                if (!raw) return [];
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveCachedResendList(list) {
+            try {
+                if (Array.isArray(list)) {
+                    sessionStorage.setItem(RESEND_CACHE_KEY, JSON.stringify(list));
+                }
+            } catch (e) {}
+        }
+
+        let resendList = loadCachedResendList();
+
+        function showResendError(msg, isAuthError) {
             const box = document.getElementById('resendErrorBox');
             if (!box) return;
             if (!msg) { box.style.display = 'none'; box.innerHTML = ''; return; }
-            box.innerHTML = '<b>⚠️ Data Spreadsheet belum bisa dimuat</b><br>' + escAttr(msg);
+            const reloginBtn = isAuthError
+                ? '<div style="margin-top:6px;"><button type="button" onclick="logoutAdmin()" style="background:#dc2626;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-weight:700;font-size:0.75rem;cursor:pointer;">🔑 Login Ulang Sekarang</button></div>'
+                : '';
+            box.innerHTML = '<b>⚠️ Data Spreadsheet belum bisa dimuat</b><br>' + escAttr(msg) + reloginBtn;
             box.style.display = 'block';
         }
 
         let resendLoading = false;
-        async function loadResendData() {
+        async function loadResendData(silent) {
             if (resendLoading) return;
             resendLoading = true;
             const btn = document.getElementById('btnRefreshResend');
-            if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
-            showToast('🔄 Mengambil data dari Spreadsheet...');
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.6';
+                btn.textContent = '⏳ Memuat Data...';
+            }
+            if (!resendList || resendList.length === 0) {
+                renderResendTable();
+            }
+            if (!silent) {
+                showToast('🔄 Mengambil data dari Spreadsheet...');
+            }
             try { localStorage.removeItem('ohsnap_resend_overrides'); } catch (e) {}
             try {
-                const tok = OhSnapCloud.getAdminToken() || 'ohsnap_resend_sec_2026';
+                const tok = OhSnapCloud.getAdminToken() || sessionStorage.getItem('ohsnap_admin_token') || 'ohsnap_resend_sec_2026';
 
-                const data = await OhSnapCloud.sheetFetch('GET', { token: tok });
+                let data;
+                try {
+                    // Timeout 55 detik untuk mengantisipasi cold-start server Google Apps Script
+                    data = await OhSnapCloud.sheetFetch('GET', { token: tok }, 55000);
+                } catch (firstErr) {
+                    const isTimeout = firstErr && /timeout/i.test(String(firstErr.message || ''));
+                    if (isTimeout) {
+                        if (!silent) showToast('⏳ Server Apps Script sedang bangun, mencoba ulang...');
+                        await new Promise(r => setTimeout(r, 1200));
+                        data = await OhSnapCloud.sheetFetch('GET', { token: tok }, 55000);
+                    } else {
+                        throw firstErr;
+                    }
+                }
 
                 if (data && !Array.isArray(data)) {
-                    if (data.status === 'unauthorized') throw new Error(data.message || 'Akses ditolak oleh Apps Script. Coba login ulang.');
+                    if (data.status === 'unauthorized') {
+                        const authErr = new Error(data.message || 'Sesi admin tidak valid atau sudah berakhir. Silakan login ulang.');
+                        authErr.isAuth = true;
+                        throw authErr;
+                    }
                     if (data.status === 'error') throw new Error(data.message || 'Apps Script melaporkan error.');
                     throw new Error('Format data dari Apps Script tidak dikenali.');
                 }
@@ -1517,17 +1573,32 @@
                     item._sheetRow = Number(item._sheetRow) || (item.id !== undefined ? Number(item.id) + 1 : idx + 3);
                     return item;
                 });
+                saveCachedResendList(resendList);
                 showResendError('');
                 renderResendTable();
-                showToast('✅ Data Spreadsheet berhasil diperbarui! (' + resendList.length + ' data)');
+                if (!silent) {
+                    showToast('✅ Data Spreadsheet berhasil diperbarui! (' + resendList.length + ' data)');
+                }
             } catch (e) {
                 console.error('Gagal mengambil data Spreadsheet:', e);
-                showResendError(e && e.message ? e.message : String(e));
+                const isAuth = Boolean(e && e.isAuth);
+                const errMsg = e && e.message ? e.message : String(e);
+                if (!isAuth && resendList && resendList.length > 0) {
+                    showResendError(errMsg + ' (Menampilkan ' + resendList.length + ' data terakhir dari sesi ini — klik Refresh untuk sinkron ulang).', false);
+                } else {
+                    showResendError(errMsg, isAuth);
+                }
                 renderResendTable();
-                showToast('⚠️ Gagal mengambil data Spreadsheet');
+                if (!silent) {
+                    showToast('⚠️ Gagal mengambil data Spreadsheet');
+                }
             } finally {
                 resendLoading = false;
-                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '';
+                    btn.textContent = '🔄 Refresh Data Spreadsheet';
+                }
             }
         }
 
@@ -1568,7 +1639,10 @@
              
             if (!resendList || resendList.length === 0) {
                 if (noteEl) { noteEl.textContent = ''; noteEl.style.display = 'none'; }
-                tb.innerHTML = `<tr><td colspan="13" style="text-align:center; padding:20px; color:#999;">Belum ada data resend softcopy.</td></tr>`;
+                const emptyText = resendLoading
+                    ? '⏳ Sedang memuat data permintaan dari Google Spreadsheet...'
+                    : 'Belum ada data resend softcopy.';
+                tb.innerHTML = `<tr><td colspan="13" style="text-align:center; padding:20px; color:#999;">${emptyText}</td></tr>`;
                 return;
             }
 
@@ -1681,9 +1755,10 @@
             };
 
             try {
-                const out = await OhSnapCloud.sheetFetch('POST', payload);
+                const out = await OhSnapCloud.sheetFetch('POST', payload, 45000);
                 if (!out || out.status !== 'success') throw new Error((out && out.message) || 'Apps Script menolak perubahan status.');
                 if (out.matched === false) throw new Error('Baris tidak ditemukan di Spreadsheet. Klik Refresh lalu coba lagi.');
+                saveCachedResendList(resendList);
                 showToast('✅ Status berhasil diubah menjadi ' + next + ' di Spreadsheet!');
             } catch (e) {
                 r.tindak_lanjut = curr;
@@ -1713,11 +1788,12 @@
             };
 
             try {
-                const out = await OhSnapCloud.sheetFetch('POST', payload);
+                const out = await OhSnapCloud.sheetFetch('POST', payload, 45000);
                 if (!out || out.status !== 'success') throw new Error((out && out.message) || 'Apps Script menolak penghapusan.');
                 if (out.matched === false) throw new Error('Baris tidak ditemukan di Spreadsheet (mungkin sudah terhapus). Klik Refresh.');
+                saveCachedResendList(resendList);
                 showToast('🗑️ Data berhasil dihapus permanen dari Spreadsheet!');
-                setTimeout(() => loadResendData(), 1200);
+                setTimeout(() => loadResendData(true), 1200);
             } catch (e) {
                 resendList.splice(idx, 0, backupRow);
                 renderResendTable();
@@ -1885,6 +1961,7 @@
             sessionStorage.removeItem('ohsnap_admin_token');
             sessionStorage.removeItem('ohsnap_admin_active');
             sessionStorage.removeItem('ohsnap_login_ticket');
+            sessionStorage.removeItem(RESEND_CACHE_KEY);
             if (tok) {
                 await OhSnapCloud.logoutAdminSession(tok);
             }
@@ -1915,6 +1992,8 @@
             cmsData = localData;
 
             initAllRenders();
+            renderResendTable();
+            loadResendData(resendList.length > 0);
             clearNewAdminInputs();
             setTimeout(clearNewAdminInputs, 250);
 
@@ -1950,7 +2029,6 @@
             }
 
             refreshServerAdmins();
-            loadResendData();
         });
     </script>
 </body>
