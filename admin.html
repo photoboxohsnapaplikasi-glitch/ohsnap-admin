@@ -215,7 +215,7 @@
     <main class="main-content">
         <div class="top-bar">
             <h1 id="pageTitle">Pengaturan Banner & Hero Title</h1>
-            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;"><span id="syncStatusBadge" style="font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:50px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">☁️ Memuat Cloud...</span><button type="button" id="btnCleanOrphans" style="display:none; background:#f59e0b; color:#fff; border:none; padding:6px 10px; border-radius:50px; font-weight:700; font-size:0.74rem; cursor:pointer;" onclick="cleanOrphanStorageFiles()">🧹 Bersihkan File Yatim</button><button type="button" style="background:#475569; color:#fff; border:none; padding:6px 12px; border-radius:50px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="openCmsHistoryModal()">🕒 Riwayat</button><button type="button" style="background:#2b4c7e; color:#fff; border:none; padding:6px 12px; border-radius:50px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="downloadCMSBackup()">📥 Backup JSON</button><button class="btn-save-all" onclick="saveAllCMS()">💾 Simpan Semua Perubahan</button></div>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;"><span id="syncStatusBadge" role="status" aria-live="polite" style="font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:50px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">☁️ Memuat Cloud...</span><button type="button" id="btnCleanOrphans" style="display:none; background:#f59e0b; color:#fff; border:none; padding:6px 10px; border-radius:50px; font-weight:700; font-size:0.74rem; cursor:pointer;" onclick="cleanOrphanStorageFiles()">🧹 Bersihkan File Yatim</button><button type="button" style="background:#475569; color:#fff; border:none; padding:6px 12px; border-radius:50px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="openCmsHistoryModal()">🕒 Riwayat</button><button type="button" style="background:#2b4c7e; color:#fff; border:none; padding:6px 12px; border-radius:50px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="downloadCMSBackup()">📥 Backup JSON</button><button class="btn-save-all" onclick="saveAllCMS(false, true)">💾 Simpan Semua Perubahan</button></div>
         </div>
         <div id="sessionDraftBanner" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:10px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; font-size:0.8rem; line-height:1.45;"></div>
         <div id="defaultPwBanner" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:10px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:0.8rem; line-height:1.45;"></div>
@@ -478,10 +478,10 @@
         </section>
     </main>
 
-    <div id="cmsHistoryModal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:10000; align-items:center; justify-content:center; padding:16px;">
+    <div id="cmsHistoryModal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle" onclick="if(event.target===this)closeCmsHistoryModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:10000; align-items:center; justify-content:center; padding:16px;">
         <div style="background:#fff; width:100%; max-width:560px; max-height:82vh; overflow-y:auto; border-radius:14px; padding:18px; box-shadow:0 20px 50px rgba(0,0,0,0.25); border:1px solid var(--border-color);">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:12px;">
-                <h3 id="historyModalTitle" style="font-size:1rem; color:var(--secondary); font-weight:800;">🕒 Riwayat Versi Cloud (20 Terakhir)</h3>
+                <h3 id="historyModalTitle" style="font-size:1rem; color:var(--secondary); font-weight:800;">🕒 Riwayat Versi Cloud (Hingga 50 Snapshot)</h3>
                 <button type="button" onclick="closeCmsHistoryModal()" style="background:#f1f5f9; border:none; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer; color:#334155;">✕ Tutup</button>
             </div>
             <p style="font-size:0.76rem; color:#64748b; margin-bottom:10px;">Setiap penyimpanan ke Cloud otomatis menyimpan salinan versi sebelumnya. Klik <b>Pulihkan</b> untuk mengembalikan konten ke versi tersebut.</p>
@@ -489,7 +489,40 @@
         </div>
     </div>
 
-    <div id="toast" class="toast-notif">✅ Berhasil disimpan!</div>
+    <div id="forcePasswordChangeModal" role="dialog" aria-modal="true" aria-labelledby="forcePwTitle" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.78); z-index:10050; align-items:center; justify-content:center; padding:16px;">
+        <div style="background:#fff; width:100%; max-width:440px; border-radius:14px; padding:22px; box-shadow:0 24px 60px rgba(0,0,0,0.35); border:2px solid #f59e0b;">
+            <h3 id="forcePwTitle" style="font-size:1.05rem; color:#92400e; font-weight:800; margin-bottom:8px;">🔒 Wajib Ganti Password Bawaan</h3>
+            <p style="font-size:0.8rem; color:#475569; line-height:1.5; margin-bottom:14px;">Akun Anda masih memakai password bawaan (<b>ohsnap</b>). Demi keamanan, seluruh operasi simpan &amp; upload dikunci oleh server sampai Anda mengganti password dengan minimal 8 karakter.</p>
+            <div class="form-group">
+                <label>Password Saat Ini</label>
+                <div class="password-container">
+                    <input type="password" id="forceOldPass" placeholder="Masukkan password saat ini" autocomplete="current-password">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('forceOldPass', this)">👁️</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Password Baru (Min. 8 Karakter, bukan "ohsnap")</label>
+                <div class="password-container">
+                    <input type="password" id="forceNewPass" placeholder="Minimal 8 karakter kuat" autocomplete="new-password">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('forceNewPass', this)">👁️</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Konfirmasi Password Baru</label>
+                <div class="password-container">
+                    <input type="password" id="forceConfirmPass" placeholder="Ulangi password baru" autocomplete="new-password">
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility('forceConfirmPass', this)">👁️</button>
+                </div>
+            </div>
+            <div id="forcePwErr" style="display:none; margin-bottom:10px; padding:8px 10px; border-radius:8px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; font-size:0.78rem; font-weight:600;"></div>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <button type="button" id="btnForceSavePw" class="btn-add" style="flex:1; padding:9px; background:var(--primary);" onclick="submitForcedPasswordChange()">💾 Simpan Password Baru</button>
+                <button type="button" class="btn-remove" style="padding:9px 12px;" onclick="logoutAdmin()">🚪 Keluar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" role="status" aria-live="polite" class="toast-notif">✅ Berhasil disimpan!</div>
 
     <script>
         // Proteksi Login Admin
@@ -649,41 +682,41 @@
                 subVideoEn: 'Video feed of our customers\' fun moments in the photobox booth'
             },
             studios: [
-                { title: 'Booth Train Thematic', desc: 'Desain kabin kereta estetik', img: '' },
-                { title: 'Booth Hotel & Elevator', desc: 'Nuansa lobi hotel & lift', img: '' },
-                { title: 'Booth Claw & Pastel', desc: 'Warna cerah penuh keceriaan', img: '' },
-                { title: 'Booth Portable Series', desc: 'Gaya minimalis modern', img: '' }
+                { _uid: 'default-studio-1', title: 'Booth Train Thematic', desc: 'Desain kabin kereta estetik', img: '' },
+                { _uid: 'default-studio-2', title: 'Booth Hotel & Elevator', desc: 'Nuansa lobi hotel & lift', img: '' },
+                { _uid: 'default-studio-3', title: 'Booth Claw & Pastel', desc: 'Warna cerah penuh keceriaan', img: '' },
+                { _uid: 'default-studio-4', title: 'Booth Portable Series', desc: 'Gaya minimalis modern', img: '' }
             ],
             videos: [
-                { title: 'Video 1', url: '', linkUrl: '', thumb: '' },
-                { title: 'Video 2', url: '', linkUrl: '', thumb: '' },
-                { title: 'Video 3', url: '', linkUrl: '', thumb: '' },
-                { title: 'Video 4', url: '', linkUrl: '', thumb: '' },
-                { title: 'Video 5', url: '', linkUrl: '', thumb: '' }
+                { _uid: 'default-video-1', title: 'Video 1', url: '', linkUrl: '', thumb: '' },
+                { _uid: 'default-video-2', title: 'Video 2', url: '', linkUrl: '', thumb: '' },
+                { _uid: 'default-video-3', title: 'Video 3', url: '', linkUrl: '', thumb: '' },
+                { _uid: 'default-video-4', title: 'Video 4', url: '', linkUrl: '', thumb: '' },
+                { _uid: 'default-video-5', title: 'Video 5', url: '', linkUrl: '', thumb: '' }
             ],
             promos: [
-                { title: 'Promo Pelajar & Mahasiswa', badge: 'HOT PROMO', desc: 'Diskon spesial KTM aktif!', img: '' },
-                { title: 'Paket Bundling Extra Print', badge: 'BEST DEAL', desc: 'Cetak lebih banyak untuk geng.', img: '' },
-                { title: 'Weekend Flash Sale', badge: 'LIMITED', desc: 'Potongan harga khusus.', img: '' }
+                { _uid: 'default-promo-1', title: 'Promo Pelajar & Mahasiswa', badge: 'HOT PROMO', desc: 'Diskon spesial KTM aktif!', img: '' },
+                { _uid: 'default-promo-2', title: 'Paket Bundling Extra Print', badge: 'BEST DEAL', desc: 'Cetak lebih banyak untuk geng.', img: '' },
+                { _uid: 'default-promo-3', title: 'Weekend Flash Sale', badge: 'LIMITED', desc: 'Potongan harga khusus.', img: '' }
             ],
             frames: [
-                { title: 'Matcha Series Frame', category: 'Special', desc: 'Nuansa hijau matcha segar & estetik', img: '' },
-                { title: 'Retro Y2K Aesthetic', category: 'Populer', desc: 'Gaya klasik tahun 2000-an', img: '' },
-                { title: 'Minimalist Clean Strip', category: 'Classic', desc: 'Desain bersih dan elegan', img: '' },
-                { title: 'Cyberpunk Neon Vibe', category: 'Modern', desc: 'Gaya neon futuristik yang keren', img: '' },
-                { title: 'Floral Romantic Spring', category: 'Exclusive', desc: 'Sentuhan bunga musim semi', img: '' }
+                { _uid: 'default-frame-1', title: 'Matcha Series Frame', category: 'Special', desc: 'Nuansa hijau matcha segar & estetik', img: '' },
+                { _uid: 'default-frame-2', title: 'Retro Y2K Aesthetic', category: 'Populer', desc: 'Gaya klasik tahun 2000-an', img: '' },
+                { _uid: 'default-frame-3', title: 'Minimalist Clean Strip', category: 'Classic', desc: 'Desain bersih dan elegan', img: '' },
+                { _uid: 'default-frame-4', title: 'Cyberpunk Neon Vibe', category: 'Modern', desc: 'Gaya neon futuristik yang keren', img: '' },
+                { _uid: 'default-frame-5', title: 'Floral Romantic Spring', category: 'Exclusive', desc: 'Sentuhan bunga musim semi', img: '' }
             ],
             services: [
-                { titleId: 'Photobox Basic Strip', price: 'Rp 35.000', descId: '2 Strip Cetakan Foto + File Softcopy Digital + Bebas Pilih Frame', img: '' },
-                { titleId: 'Wide Angle / Big Box', price: 'Rp 45.000', descId: 'Muat hingga 6-8 orang + Cetakan 4R + Softcopy & GIF Boomerang', img: '' },
-                { titleId: 'Thematic Booth', price: 'Rp 50.000', descId: 'Sesi foto di booth tematik ikonik + Cetakan Premium + Semua File Digital', img: '' }
+                { _uid: 'default-service-1', titleId: 'Photobox Basic Strip', price: 'Rp 35.000', descId: '2 Strip Cetakan Foto + File Softcopy Digital + Bebas Pilih Frame', img: '' },
+                { _uid: 'default-service-2', titleId: 'Wide Angle / Big Box', price: 'Rp 45.000', descId: 'Muat hingga 6-8 orang + Cetakan 4R + Softcopy & GIF Boomerang', img: '' },
+                { _uid: 'default-service-3', titleId: 'Thematic Booth', price: 'Rp 50.000', descId: 'Sesi foto di booth tematik ikonik + Cetakan Premium + Semua File Digital', img: '' }
             ],
             locations: [
-                { name: 'Kediri Mall', floor: 'Lantai 5', hours: '10.00 - 22.00', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Oh+Snap+Photobox+Kediri&query_place_id=ChIJJTp8gHxXeC4R0eMGkmnssvQ', img: '' },
-                { name: 'Plaza Cilacap', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Oh+Snap+Photobox+Plaza+Cilacap&query_place_id=ChIJ71iRM3wTZS4Rrr7EqRI3A84', img: '' },
-                { name: 'Laksana Baru', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Oh+Snap+Photobox+Majenang&query_place_id=ChIJ_3pPM_1_by4RT_FVbDVw8p4', img: '' },
-                { name: 'Plaza Pekalongan', floor: 'Lantai 2', hours: '10.00 - 22.00', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Oh+Snap+Photobox+Pekalongan&query_place_id=ChIJ46o-mGMlcC4REovLqtjx-_4', img: '' },
-                { name: 'Yogya Pemalang', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Oh+Snap+Photobox+Pemalang&query_place_id=ChIJkY0Gm7nbby4RmIpX5D5mdhw', img: '' }
+                { _uid: 'default-loc-1', name: 'Kediri Mall', floor: 'Lantai 5', hours: '10.00 - 22.00', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Oh+Snap+Photobox+Kediri&query_place_id=ChIJJTp8gHxXeC4R0eMGkmnssvQ', img: '' },
+                { _uid: 'default-loc-2', name: 'Plaza Cilacap', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Oh+Snap+Photobox+Plaza+Cilacap&query_place_id=ChIJ71iRM3wTZS4Rrr7EqRI3A84', img: '' },
+                { _uid: 'default-loc-3', name: 'Laksana Baru', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Oh+Snap+Photobox+Majenang&query_place_id=ChIJ_3pPM_1_by4RT_FVbDVw8p4', img: '' },
+                { _uid: 'default-loc-4', name: 'Plaza Pekalongan', floor: 'Lantai 2', hours: '10.00 - 22.00', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Oh+Snap+Photobox+Pekalongan&query_place_id=ChIJ46o-mGMlcC4REovLqtjx-_4', img: '' },
+                { _uid: 'default-loc-5', name: 'Yogya Pemalang', floor: 'Lantai 3', hours: '10.00 - 22.00', mapUrl: 'https://www.google.com/maps/search/?api=1&query=Oh+Snap+Photobox+Pemalang&query_place_id=ChIJkY0Gm7nbby4RmIpX5D5mdhw', img: '' }
             ],
             footer: { 
                 brand: 'OH SNAP! Photobox Group', 
@@ -728,12 +761,13 @@
             }
             if (parsed.titles) Object.assign(merged.titles, parsed.titles);
             
-            if (Array.isArray(parsed.studios) && parsed.studios.length > 0) merged.studios = parsed.studios;
-            if (Array.isArray(parsed.videos) && parsed.videos.length > 0) merged.videos = sanitizeVideosList(parsed.videos);
-            if (Array.isArray(parsed.promos) && parsed.promos.length > 0) merged.promos = parsed.promos;
-            if (Array.isArray(parsed.frames) && parsed.frames.length > 0) merged.frames = parsed.frames;
-            if (Array.isArray(parsed.services) && parsed.services.length > 0) merged.services = parsed.services;
-            if (Array.isArray(parsed.locations) && parsed.locations.length > 0) merged.locations = parsed.locations;
+            // Terima juga array kosong [] agar item yang sengaja dihapus semua tidak muncul lagi sebagai default!
+            if (Array.isArray(parsed.studios)) merged.studios = parsed.studios;
+            if (Array.isArray(parsed.videos)) merged.videos = sanitizeVideosList(parsed.videos);
+            if (Array.isArray(parsed.promos)) merged.promos = parsed.promos;
+            if (Array.isArray(parsed.frames)) merged.frames = parsed.frames;
+            if (Array.isArray(parsed.services)) merged.services = parsed.services;
+            if (Array.isArray(parsed.locations)) merged.locations = parsed.locations;
             
             if (parsed.footer) Object.assign(merged.footer, parsed.footer);
 
@@ -750,11 +784,15 @@
 
         function ensureItemIds(obj) {
             if (!obj || typeof obj !== 'object') return;
+            if (window.OhSnapCloud && typeof OhSnapCloud.ensureStableItemUids === 'function') {
+                OhSnapCloud.ensureStableItemUids(obj);
+                return;
+            }
             ['videos', 'studios', 'promos', 'frames', 'services', 'locations'].forEach(arrKey => {
                 if (Array.isArray(obj[arrKey])) {
-                    obj[arrKey].forEach(item => {
+                    obj[arrKey].forEach((item, idx) => {
                         if (item && typeof item === 'object' && !item._uid) {
-                            item._uid = genItemUid();
+                            item._uid = 'mig-' + arrKey + '-' + (idx + 1);
                         }
                     });
                 }
@@ -872,10 +910,13 @@
             }
         }
 
+        const CONFIRMED_CLOUD_SYNC_KEY = 'ohsnap_cloud_confirmed_data';
+
         function saveUnsyncedDraft(dataObj) {
             try {
                 const clean = OhSnapCloud.stripSensitiveForPublic(cleanDataForCloud(dataObj));
-                localStorage.setItem(UNSYNCED_DRAFT_KEY, JSON.stringify({ savedAt: Date.now(), data: clean }));
+                const baseSnap = OhSnapCloud.getBaseCloudData();
+                localStorage.setItem(UNSYNCED_DRAFT_KEY, JSON.stringify({ savedAt: Date.now(), baseData: baseSnap, data: clean }));
             } catch (e) {}
         }
 
@@ -922,12 +963,16 @@
                 return;
             }
             const prevSnap = JSON.parse(JSON.stringify(cmsData));
-            cmsData = mergeWithDefault(draft.data);
+            // Lakukan 3-Way Merge terhadap data Cloud terbaru (JANGAN timpa paksa perubahan perangkat lain!)
+            const remoteNow = pendingRemoteCloudData || OhSnapCloud.getBaseCloudData() || cmsData;
+            const baseForMerge = draft.baseData || remoteNow;
+            const merged = OhSnapCloud.deepMergeCMS(baseForMerge, remoteNow, draft.data, true);
+            cmsData = mergeWithDefault(merged);
             applySelectiveRenders(prevSnap, cmsData);
             showSessionDraftBanner('');
             autoSavePausedReason = '';
-            showToast('🔄 Draft dipulihkan! Menyimpan ke Cloud...');
-            saveAllCMS(true);
+            showToast('🔄 Draft digabungkan dengan data Cloud terbaru! Menyimpan...');
+            saveAllCMS(false, true);
         }
 
         function discardPendingDraftChoice() {
@@ -1014,15 +1059,13 @@
             } catch (e) {
                 console.warn('Auto-save cloud tertunda:', e);
                 saveUnsyncedDraft(cmsData);
-                if (e && e.status === 401) {
+                if (e && e.code === 'PASSWORD_CHANGE_REQUIRED') {
+                    autoSavePausedReason = 'PW';
+                    openForcePasswordModal();
+                } else if (e && e.status === 401) {
                     handleExpiredSessionNotice();
                 } else if (e && e.code === 'CONFLICT') {
-                    autoSavePausedReason = 'CONFLICT';
-                    setSyncBadge('err', '⚠️ Bentrok Cloud (Klik Simpan)');
-                    showSessionDraftBanner(
-                        '<b>⚠️ Terjadi konflik sinkronisasi Cloud.</b> Autosave dijeda agar editan Anda aman sebagai draft. ' +
-                        '<button type="button" onclick="saveAllCMS(true)" style="margin-left:8px; background:#ff1493; color:#fff; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.76rem; cursor:pointer;">💾 Paksa Simpan Perubahan Ini</button>'
-                    );
+                    showConflictResolutionBanner();
                 } else {
                     setSyncBadge('err', '⚠️ Gagal Sinkron (Klik Simpan)');
                 }
@@ -1051,9 +1094,6 @@
                 localBackupTimer = null;
                 saveCMSBackupToIDB(cmsData);
                 saveUnsyncedDraft(cmsData);
-                try {
-                    localStorage.setItem('ohsnap_cms_data', JSON.stringify(OhSnapCloud.stripSensitiveForPublic(cmsData)));
-                } catch (e) {}
             }, 400);
 
             if (autoSavePausedReason) return;
@@ -1244,6 +1284,10 @@
             } catch (e) {
                 console.error('Auto-sync gagal:', e);
                 saveUnsyncedDraft(cmsData);
+                if (e && e.code === 'PASSWORD_CHANGE_REQUIRED') {
+                    openForcePasswordModal();
+                    return false;
+                }
                 if (e && e.status === 401) {
                     handleExpiredSessionNotice();
                     return false;
@@ -1868,7 +1912,7 @@
             setF('footerIgUrl', f.igUrl !== undefined ? f.igUrl : '');
             setF('footerTtName', f.ttName !== undefined ? f.ttName : '');
             setF('footerTtUrl', f.ttUrl !== undefined ? f.ttUrl : '');
-            setF('footerCardTitleId', f.cardTitleId !== undefined ? f.cardTitleId : 'Find nearby OH SNAP! Studio');
+            setF('footerCardTitleId', f.cardTitleId !== undefined ? f.cardTitleId : 'Temukan Studio OH SNAP! Terdekat:');
             setF('footerCardTitleEn', f.cardTitleEn !== undefined ? f.cardTitleEn : 'Find nearby OH SNAP! Studio');
             setF('footerCardDescId', f.cardDescId !== undefined ? f.cardDescId : 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
             setF('footerCardDescEn', f.cardDescEn !== undefined ? f.cardDescEn : 'Find the nearest booth and studio in your city to capture your special moments today!');
@@ -1928,6 +1972,7 @@
         const RESEND_CACHE_KEY = 'ohsnap_resend_cache';
         const RESEND_PAGE_LIMIT = 100;
         let resendTotalCount = 0;
+        let resendTotalPending = null;
         let resendHasLoadedOnce = false;
 
         function loadCachedResendList() {
@@ -2042,6 +2087,7 @@
 
                 resendList = appendMore ? resendList.concat(mapped) : mapped;
                 resendTotalCount = (data && typeof data.total === 'number') ? data.total : resendList.length;
+                resendTotalPending = (data && typeof data.totalPending === 'number') ? data.totalPending : null;
                 resendHasLoadedOnce = true;
 
                 resendAutoPollPaused = false;
@@ -2138,7 +2184,8 @@
                 return;
             }
 
-            const belumCount = resendList.filter(item => String(item.tindak_lanjut || item.aksi || '').trim().toLowerCase() !== 'sudah').length;
+            const loadedBelum = resendList.filter(item => String(item.tindak_lanjut || item.aksi || '').trim().toLowerCase() !== 'sudah').length;
+            const belumCount = (typeof resendTotalPending === 'number' && resendList.length < resendTotalCount) ? resendTotalPending : loadedBelum;
             if (noteEl) {
                 if (belumCount > 0) {
                     noteEl.textContent = `note : ada ${belumCount} permintaan yang masih berstatus belum melakukan aksi kirim`;
@@ -2222,12 +2269,16 @@
             renderResendTable();
             showToast('⏳ Memperbarui status di Spreadsheet...');
 
+            if (typeof resendTotalPending === 'number') {
+                resendTotalPending = Math.max(0, resendTotalPending + (next === 'Sudah' ? -1 : 1));
+            }
             const payload = {
                 action: 'updateStatus',
                 token: tok,
                 uid: r.uid || '',
                 status: next,
                 sheetRow: r._sheetRow || '',
+                tanggal_masuk: r.tanggal_masuk || '',
                 nama: r.nama || r.name || '',
                 no_hp: r.whatsapp || r.no_hp || r.hp || '',
                 link_foto: r.link_foto || ''
@@ -2249,6 +2300,9 @@
                 showToast('✅ Status berhasil diubah menjadi ' + next + ' di Spreadsheet!');
             } catch (e) {
                 r.tindak_lanjut = curr;
+                if (typeof resendTotalPending === 'number') {
+                    resendTotalPending = Math.max(0, resendTotalPending + (next === 'Sudah' ? 1 : -1));
+                }
                 showResendError(e && e.message ? e.message : String(e));
                 showToast('⚠️ Gagal memperbarui status di Spreadsheet');
             } finally {
@@ -2267,9 +2321,11 @@
             if (!confirm(`Hapus permanen data "${r.nama || 'Pelanggan'}" dari Dashboard & Google Spreadsheet?`)) return;
 
             const backupRow = resendList[idx];
+            const wasPending = String(r.tindak_lanjut || '').trim().toLowerCase() !== 'sudah';
             activeSheetMutations++;
             resendList.splice(idx, 1);
             if (resendTotalCount > 0) resendTotalCount--;
+            if (wasPending && typeof resendTotalPending === 'number' && resendTotalPending > 0) resendTotalPending--;
             renderResendTable();
             showToast('⏳ Menghapus data dari Google Spreadsheet...');
 
@@ -2278,6 +2334,7 @@
                 token: tok,
                 uid: r.uid || '',
                 sheetRow: r._sheetRow || '',
+                tanggal_masuk: r.tanggal_masuk || '',
                 nama: r.nama || r.name || '',
                 no_hp: r.whatsapp || r.no_hp || r.hp || '',
                 link_foto: r.link_foto || ''
@@ -2301,6 +2358,7 @@
             } catch (e) {
                 resendList.splice(idx, 0, backupRow);
                 resendTotalCount++;
+                if (wasPending && typeof resendTotalPending === 'number') resendTotalPending++;
                 renderResendTable();
                 showResendError(e && e.message ? e.message : String(e));
                 showToast('⚠️ Gagal menghapus data di Spreadsheet');
@@ -2367,6 +2425,12 @@
                 adminListLoading = false;
                 if (Array.isArray(list)) {
                     serverAdminList = list;
+                    const me = getCurrentLoggedAdmin();
+                    const myRow = list.find(x => (me.id && Number(x.id) === Number(me.id)) || (me.username && String(x.username || '').toLowerCase() === String(me.username).toLowerCase()));
+                    if (myRow && myRow.mustChangePassword) {
+                        sessionStorage.setItem('ohsnap_must_change_pw', '1');
+                        openForcePasswordModal();
+                    }
                     renderAdminTable();
                 }
             } catch (e) {
@@ -2451,7 +2515,62 @@
             }
         }
 
-        async function saveAllCMS(forceOverwrite) {
+        function showConflictResolutionBanner() {
+            autoSavePausedReason = 'CONFLICT';
+            setSyncBadge('err', '⚠️ Bentrok Cloud (Perlu Konfirmasi)');
+            showSessionDraftBanner(
+                '<b>⚠️ Sinkronisasi padat: Cloud baru saja diperbarui perangkat lain.</b> Autosave dijeda agar tidak ada data yang tertimpa diam-diam. Pilih tindakan Anda: ' +
+                '<button type="button" onclick="mergeAndRetrySave()" style="margin-left:8px; background:#10b981; color:#fff; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">🔄 Gabungkan Ulang &amp; Simpan</button> ' +
+                '<button type="button" onclick="reloadCloudDiscardLocal()" style="margin-left:4px; background:#64748b; color:#fff; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">☁️ Ambil Data Cloud</button> ' +
+                '<button type="button" onclick="if(confirm(\'Yakin menimpa perubahan perangkat lain dengan data di layar ini?\')){autoSavePausedReason=\'\';saveAllCMS(true, true);}" style="margin-left:4px; background:#dc2626; color:#fff; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">⚠️ Timpa Paksa</button>'
+            );
+        }
+
+        async function mergeAndRetrySave() {
+            try {
+                const latest = await OhSnapCloud.load(true, { skipSyncTime: true });
+                if (latest && Object.keys(latest).length > 0) {
+                    const base = OhSnapCloud.getBaseCloudData() || latest;
+                    const merged = OhSnapCloud.deepMergeCMS(base, latest, cmsData, true);
+                    const prevSnap = JSON.parse(JSON.stringify(cmsData));
+                    cmsData = mergeWithDefault(merged);
+                    OhSnapCloud.setBaseCloudData(latest);
+                    lastKnownCloudTime = Number(latest.lastUpdated || 0);
+                    OhSnapCloud.setKnownCloudTime(lastKnownCloudTime);
+                    applySelectiveRenders(prevSnap, cmsData);
+                }
+                autoSavePausedReason = '';
+                showSessionDraftBanner('');
+                await saveAllCMS(false, true);
+            } catch (e) {
+                showToast('⚠️ Gagal mengambil data Cloud terbaru: ' + (e && e.message ? e.message : e));
+            }
+        }
+
+        async function reloadCloudDiscardLocal() {
+            if (!confirm('Buang editan lokal yang belum tersimpan dan gunakan data terbaru dari Cloud?')) return;
+            try {
+                const latest = await OhSnapCloud.load(true);
+                if (latest && Object.keys(latest).length > 0) {
+                    const prevSnap = JSON.parse(JSON.stringify(cmsData));
+                    cmsData = mergeWithDefault(latest);
+                    cmsData.lastUpdated = Number(latest.lastUpdated || 0);
+                    lastKnownCloudTime = cmsData.lastUpdated;
+                    OhSnapCloud.setKnownCloudTime(lastKnownCloudTime);
+                    OhSnapCloud.setBaseCloudData(latest);
+                    applySelectiveRenders(prevSnap, cmsData);
+                    markSynced(cmsData);
+                    autoSavePausedReason = '';
+                    showSessionDraftBanner('');
+                    setSyncBadge('ok', '☁️ Tersimpan di Cloud');
+                    showToast('☁️ Data terbaru dari Cloud berhasil dimuat.');
+                }
+            } catch (e) {
+                showToast('⚠️ Gagal memuat data Cloud.');
+            }
+        }
+
+        async function saveAllCMS(forceOverwrite, createSnapshot) {
             updateBannerState();
             updateTitlesState();
             updateFooterState();
@@ -2467,7 +2586,7 @@
                         const prevSnap = JSON.parse(JSON.stringify(cmsData));
                         cmsData = mergeWithDefault(merged);
                         OhSnapCloud.setBaseCloudData(remoteCheck);
-                        lastKnownCloudTime = Number(remoteCheck.lastUpdated || Date.now());
+                        lastKnownCloudTime = Number(remoteCheck.lastUpdated || 0);
                         OhSnapCloud.setKnownCloudTime(lastKnownCloudTime);
                         applySelectiveRenders(prevSnap, cmsData);
                     }
@@ -2485,7 +2604,7 @@
 
             try {
                 const cleanPayload = cleanDataForCloud(cmsData);
-                const savedCloud = await OhSnapCloud.save(cleanPayload, lastKnownCloudTime, Boolean(forceOverwrite));
+                const savedCloud = await OhSnapCloud.save(cleanPayload, lastKnownCloudTime, Boolean(forceOverwrite), Boolean(createSnapshot));
                 if (savedCloud && savedCloud.lastUpdated) {
                     cmsData.lastUpdated = savedCloud.lastUpdated;
                     lastKnownCloudTime = savedCloud.lastUpdated;
@@ -2493,7 +2612,7 @@
                 if (savedCloud && savedCloud._mergedFromRemote) {
                     const prevSnap = JSON.parse(JSON.stringify(cmsData));
                     cmsData = mergeWithDefault(savedCloud);
-                    cmsData.lastUpdated = Number(savedCloud.lastUpdated || Date.now());
+                    cmsData.lastUpdated = Number(savedCloud.lastUpdated || 0);
                     applySelectiveRenders(prevSnap, cmsData);
                 }
                 isCloudReady = true;
@@ -2505,8 +2624,13 @@
             } catch (err) {
                 console.error('Detail Error Simpan Cloud:', err);
                 saveUnsyncedDraft(cmsData);
-                if (err && err.code === 'CONFLICT' && !forceOverwrite) {
-                    return await saveAllCMS(true);
+                if (err && err.code === 'PASSWORD_CHANGE_REQUIRED') {
+                    autoSavePausedReason = 'PW';
+                    openForcePasswordModal();
+                } else if (err && err.code === 'CONFLICT') {
+                    // JANGAN timpa paksa diam-diam! Tampilkan pilihan eksplisit ke admin
+                    showConflictResolutionBanner();
+                    showToast('⚠️ Konflik data Cloud — pilih Gabungkan Ulang, Ambil Cloud, atau Timpa Paksa.');
                 } else if (err && err.status === 401) {
                     handleExpiredSessionNotice();
                 } else if (err && err.status) {
@@ -2532,11 +2656,15 @@
 
         function markSynced(obj) {
             try {
+                const publicClean = OhSnapCloud.stripSensitiveForPublic(obj);
+                const serialized = JSON.stringify(publicClean);
                 clearUnsyncedDraft();
                 saveCMSBackupToIDB(obj);
                 localStorage.setItem('ohsnap_cloud_snapshot', comparableCMS(obj));
                 localStorage.setItem('ohsnap_cloud_synced_at', String(obj.lastUpdated || Date.now()));
-                localStorage.setItem('ohsnap_cms_data', JSON.stringify(OhSnapCloud.stripSensitiveForPublic(obj)));
+                localStorage.setItem('ohsnap_cms_data', serialized);
+                // Kunci khusus state Cloud terkonfirmasi agar tab admin lain tidak pernah tercemar edit lokal belum tersimpan
+                localStorage.setItem(CONFIRMED_CLOUD_SYNC_KEY, serialized);
             } catch (e) {}
         }
 
@@ -2657,15 +2785,22 @@
                 handleIncomingRemoteCMS(remoteData);
             });
 
-            // Sinkron instan antar tab di browser yang sama
+            // Sinkron instan antar tab HANYA dari data Cloud terkonfirmasi (cegah pencemaran baseCloudData oleh edit lokal tab lain)
             window.addEventListener('storage', (ev) => {
-                if (ev && ev.key === 'ohsnap_cms_data' && ev.newValue) {
+                if (ev && ev.key === CONFIRMED_CLOUD_SYNC_KEY && ev.newValue) {
                     try {
                         const parsed = JSON.parse(ev.newValue);
-                        if (parsed && typeof parsed === 'object') {
+                        if (parsed && typeof parsed === 'object' && Number(parsed.lastUpdated || 0) > 0) {
                             handleIncomingRemoteCMS(parsed);
                         }
                     } catch (e) {}
+                }
+            });
+
+            // Tutup modal riwayat dengan tombol Escape
+            document.addEventListener('keydown', (ev) => {
+                if (ev && ev.key === 'Escape') {
+                    closeCmsHistoryModal();
                 }
             });
 
@@ -2773,16 +2908,60 @@
             }
         }
 
+        function openForcePasswordModal() {
+            const m = document.getElementById('forcePasswordChangeModal');
+            if (m) m.style.display = 'flex';
+            autoSavePausedReason = 'PW';
+            setSyncBadge('err', '🔒 Wajib Ganti Password');
+        }
+
         function checkDefaultPasswordWarning() {
-            const el = document.getElementById('defaultPwBanner');
-            if (!el) return;
-            if (sessionStorage.getItem('ohsnap_must_change_pw') === '1') {
-                el.innerHTML = '<b>⚠️ Peringatan Keamanan:</b> Akun Anda masih menggunakan password bawaan (<b>ohsnap</b>). Segera ganti password Anda di menu <b>11. Kelola Admin</b> agar keamanan dashboard terjaga. ' +
-                    '<button type="button" onclick="const b=document.querySelector(\'button[onclick*=sec-admins]\');if(b)b.click();" style="margin-left:8px; background:#d97706; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-weight:700; font-size:0.74rem; cursor:pointer;">🔒 Ganti Password Sekarang</button>';
-                el.style.display = 'block';
-            } else {
-                el.style.display = 'none';
-                el.innerHTML = '';
+            const me = getCurrentLoggedAdmin();
+            if (sessionStorage.getItem('ohsnap_must_change_pw') === '1' || (me && me.mustChangePassword === true)) {
+                openForcePasswordModal();
+            }
+        }
+
+        async function submitForcedPasswordChange() {
+            const oldP = (document.getElementById('forceOldPass') || {}).value || '';
+            const newP = (document.getElementById('forceNewPass') || {}).value || '';
+            const cfmP = (document.getElementById('forceConfirmPass') || {}).value || '';
+            const errEl = document.getElementById('forcePwErr');
+            const btn = document.getElementById('btnForceSavePw');
+            const showErr = (msg) => {
+                if (!errEl) return;
+                errEl.textContent = msg;
+                errEl.style.display = msg ? 'block' : 'none';
+            };
+            showErr('');
+
+            if (!oldP || !newP || !cfmP) { showErr('Semua kolom wajib diisi.'); return; }
+            if (newP.length < 8) { showErr('Password baru minimal harus 8 karakter.'); return; }
+            if (newP.toLowerCase() === 'ohsnap') { showErr('Password baru tidak boleh menggunakan "ohsnap".'); return; }
+            if (newP === oldP) { showErr('Password baru harus berbeda dari password lama.'); return; }
+            if (newP !== cfmP) { showErr('Konfirmasi password baru tidak cocok.'); return; }
+
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Menyimpan...'; }
+            try {
+                await OhSnapCloud.changeAdminPassword(oldP, newP);
+                sessionStorage.removeItem('ohsnap_must_change_pw');
+                try {
+                    const me = getCurrentLoggedAdmin();
+                    if (me) {
+                        me.mustChangePassword = false;
+                        sessionStorage.setItem('ohsnap_admin_logged', JSON.stringify(me));
+                    }
+                } catch (e) {}
+                const m = document.getElementById('forcePasswordChangeModal');
+                if (m) m.style.display = 'none';
+                autoSavePausedReason = '';
+                setSyncBadge('ok', '☁️ Tersimpan di Cloud');
+                showToast('✅ Password berhasil diperbarui! Dashboard kini aktif sepenuhnya.');
+                refreshServerAdmins();
+            } catch (err) {
+                showErr((err && err.message) ? err.message : 'Gagal mengganti password.');
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = '💾 Simpan Password Baru'; }
             }
         }
 
