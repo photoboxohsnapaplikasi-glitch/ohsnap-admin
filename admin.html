@@ -607,10 +607,20 @@
             return new Blob([u8arr], { type: mime });
         }
 
-        async function uploadImageToCloud(file, maxDim = 1280, quality = 0.82) {
-            const compressedDataUrl = await compressImageFile(file, maxDim, quality);
-            const blob = dataURLToBlob(compressedDataUrl);
-            return await OhSnapCloud.upload(blob, 'img', 'jpg');
+        function encodeCanvasOptimized(canvas, quality) {
+            try {
+                const webpUrl = canvas.toDataURL('image/webp', quality);
+                if (webpUrl && webpUrl.startsWith('data:image/webp')) {
+                    return { dataUrl: webpUrl, ext: 'webp' };
+                }
+            } catch (e) {}
+            return { dataUrl: canvas.toDataURL('image/jpeg', quality), ext: 'jpg' };
+        }
+
+        async function uploadImageToCloud(file, maxDim = 1280, quality = 0.78) {
+            const encoded = await compressImageFile(file, maxDim, quality);
+            const blob = dataURLToBlob(encoded.dataUrl);
+            return await OhSnapCloud.upload(blob, 'img', encoded.ext);
         }
 
         function compressImageFile(file, maxDim = 450, quality = 0.5) {
@@ -637,13 +647,66 @@
                         ctx.fillStyle = '#ffffff';
                         ctx.fillRect(0, 0, width, height);
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
+                        resolve(encodeCanvasOptimized(canvas, quality));
                     };
                     img.onerror = function() { reject(new Error('Format gambar tidak didukung browser (seperti HEIC). Gunakan JPG, PNG, atau WebP.')); };
                     img.src = e.target.result;
                 };
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
+            });
+        }
+
+        // Ambil 1 frame thumbnail ringan (WebP ~15-25 KB) dari file MP4 agar halaman depan tidak menyedot kuota video saat dibuka
+        function captureVideoPosterBlob(file, maxDim = 420) {
+            return new Promise((resolve) => {
+                try {
+                    const objUrl = URL.createObjectURL(file);
+                    const vid = document.createElement('video');
+                    vid.muted = true;
+                    vid.playsInline = true;
+                    vid.preload = 'metadata';
+                    let done = false;
+                    const finish = (res) => {
+                        if (done) return;
+                        done = true;
+                        try { URL.revokeObjectURL(objUrl); } catch (e) {}
+                        resolve(res);
+                    };
+                    const timer = setTimeout(() => finish(null), 5000);
+                    vid.onerror = () => { clearTimeout(timer); finish(null); };
+                    vid.onloadeddata = () => {
+                        try {
+                            vid.currentTime = Math.min(0.25, (vid.duration && isFinite(vid.duration)) ? vid.duration * 0.1 : 0.1);
+                        } catch (e) {
+                            clearTimeout(timer); finish(null);
+                        }
+                    };
+                    vid.onseeked = () => {
+                        clearTimeout(timer);
+                        try {
+                            const vw = vid.videoWidth || 360;
+                            const vh = vid.videoHeight || 640;
+                            let w = vw, h = vh;
+                            if (w > maxDim || h > maxDim) {
+                                if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                                else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                            }
+                            const canvas = document.createElement('canvas');
+                            canvas.width = Math.max(1, w);
+                            canvas.height = Math.max(1, h);
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+                            const enc = encodeCanvasOptimized(canvas, 0.72);
+                            finish({ blob: dataURLToBlob(enc.dataUrl), ext: enc.ext });
+                        } catch (e) {
+                            finish(null);
+                        }
+                    };
+                    vid.src = objUrl;
+                } catch (e) {
+                    resolve(null);
+                }
             });
         }
 
@@ -1226,10 +1289,15 @@
             const idx = (typeof idxOrUid === 'string') ? findItemByUid(arr, idxOrUid) : idxOrUid;
             if (idx < 0 || !cmsData[arr][idx]) return;
             const oldUrl = cmsData[arr][idx][prop];
+            const oldThumb = (arr === 'videos' && prop === 'url') ? (cmsData[arr][idx].thumb || '') : '';
             cmsData[arr][idx][prop] = '';
+            if (arr === 'videos' && prop === 'url') cmsData[arr][idx].thumb = '';
             initAllRenders();
             const synced = await autoSyncAfterUpload('🗑️ Media dikosongkan');
-            if (synced) await safeRemoveOldFile(oldUrl);
+            if (synced) {
+                if (oldUrl) await safeRemoveOldFile(oldUrl);
+                if (oldThumb) await safeRemoveOldFile(oldThumb);
+            }
         }
 
         function togglePasswordVisibility(inputId, btnEl) {
@@ -1356,7 +1424,7 @@
             showToast('⏳ Mengunggah foto ke Cloud Storage...');
             try {
                 // Ukuran 800px untuk kartu agar tajam sekaligus hemat kuota bandwidth Supabase
-                const publicUrl = await uploadImageToCloud(file, 800, 0.80);
+                const publicUrl = await uploadImageToCloud(file, 720, 0.76);
                 const curIdx = findItemByUid(arrName, itemUid);
                 if (curIdx < 0) {
                     await OhSnapCloud.removeFile(publicUrl);
@@ -1386,9 +1454,9 @@
                 inputEl.value = '';
                 return;
             }
-            if (file.size > 15 * 1024 * 1024) {
+            if (file.size > 8 * 1024 * 1024) {
                 const mb = (file.size / (1024 * 1024)).toFixed(1);
-                if (!confirm('Ukuran video ' + mb + ' MB (disarankan di bawah 15 MB agar hemat kuota bandwidth 5 GB Supabase Free). Tetap lanjut unggah?')) {
+                if (!confirm('Ukuran video ' + mb + ' MB (disarankan di bawah 5-8 MB atau gunakan link TikTok/IG agar hemat kuota Cached Egress 5 GB/bulan Supabase Free). Tetap lanjut unggah?')) {
                     inputEl.value = '';
                     return;
                 }
@@ -1397,23 +1465,38 @@
             if (startIdx < 0) return;
             uploadingItemUids.add(itemUid);
             initAllRenders();
-            showToast('⏳ Mengunggah video ke Cloud Storage (mohon tunggu)...');
+            showToast('⏳ Mengunggah video & membuat thumbnail hemat kuota...');
             try {
                 const ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
-                const publicUrl = await OhSnapCloud.upload(file, 'video', ext);
+                const [publicUrl, posterObj] = await Promise.all([
+                    OhSnapCloud.upload(file, 'video', ext),
+                    captureVideoPosterBlob(file, 420)
+                ]);
+                let posterUrl = '';
+                if (posterObj && posterObj.blob) {
+                    try {
+                        posterUrl = await OhSnapCloud.upload(posterObj.blob, 'img', posterObj.ext);
+                    } catch (pe) {}
+                }
                 const curIdx = findItemByUid(arrName, itemUid);
                 if (curIdx < 0) {
                     await OhSnapCloud.removeFile(publicUrl);
+                    if (posterUrl) await OhSnapCloud.removeFile(posterUrl);
                     return;
                 }
                 const oldUrl = cmsData[arrName][curIdx][propName];
+                const oldThumb = cmsData[arrName][curIdx].thumb || '';
                 cmsData[arrName][curIdx][propName] = publicUrl;
+                cmsData[arrName][curIdx].thumb = posterUrl;
                 cmsData[arrName][curIdx].fileName = file.name;
                 inputEl.value = '';
                 uploadingItemUids.delete(itemUid);
                 initAllRenders();
                 const synced = await autoSyncAfterUpload('✅ Video berhasil diupload');
-                if (synced && oldUrl && oldUrl !== publicUrl) await safeRemoveOldFile(oldUrl);
+                if (synced) {
+                    if (oldUrl && oldUrl !== publicUrl) await safeRemoveOldFile(oldUrl);
+                    if (oldThumb && oldThumb !== posterUrl) await safeRemoveOldFile(oldThumb);
+                }
             } catch (cloudErr) {
                 uploadingItemUids.delete(itemUid);
                 console.warn('Upload video ke cloud gagal:', cloudErr);
@@ -1627,7 +1710,7 @@
 
                 cards.push(`<div class="item-card"><h4><span>Video #${i+1}</span><div style="display:flex;gap:6px;align-items:center;">${navHtml}<button class="btn-remove" ${lockAttr} onclick="removeVideo(${i})">Hapus</button></div></h4>
                     <div class="form-group"><label>Judul Video</label><input type="text" value="${escAttr(v.title || '')}" oninput="cmsData.videos[${i}].title=this.value; persistData();"></div>
-                    <div class="form-group"><label>Link URL (IG/TikTok/MP4) atau Upload File MP4 (disarankan &lt;15 MB)</label><div class="input-with-clear"><input type="text" value="${escAttr(inputVal)}" placeholder="${escAttr(inputPlaceholder)}" oninput="cmsData.videos[${i}].url=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('videos','${escAttr(uid)}','url')">❌ X</button></div><input type="file" accept="video/mp4,video/*" ${lockAttr} style="margin-top:6px;" onchange="uploadVideoFile(this,'videos','${escAttr(uid)}','url')">${previewBadge}</div>
+                    <div class="form-group"><label>Link URL (IG/TikTok/MP4) atau Upload File MP4 (disarankan &lt;8 MB agar hemat kuota Supabase)</label><div class="input-with-clear"><input type="text" value="${escAttr(inputVal)}" placeholder="${escAttr(inputPlaceholder)}" oninput="cmsData.videos[${i}].url=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('videos','${escAttr(uid)}','url')">❌ X</button></div><input type="file" accept="video/mp4,video/*" ${lockAttr} style="margin-top:6px;" onchange="uploadVideoFile(this,'videos','${escAttr(uid)}','url')">${previewBadge}</div>
                     <div class="form-group" style="margin-bottom:0; margin-top:10px;"><label>🔗 Link Tujuan Saat Video Dipause / Stop (IG / TikTok / Sosmed)</label><div class="input-with-clear"><input type="text" value="${escAttr(linkTargetVal)}" placeholder="https://www.tiktok.com/... atau https://www.instagram.com/..." oninput="cmsData.videos[${i}].linkUrl=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" onclick="cmsData.videos[${i}].linkUrl=''; persistData(); renderVideos();">❌ X</button></div>${linkTargetBadge}</div></div>`);
             });
             c.innerHTML = cards.join('');
@@ -1639,10 +1722,14 @@
             if (uploadingItemUids.size > 0) return alert('Tunggu proses upload selesai terlebih dahulu.');
             if (cmsData.videos.length <= 5) return alert('Batas minimal Video Feed adalah 5!');
             const oldUrl = cmsData.videos[i] && cmsData.videos[i].url;
+            const oldThumb = cmsData.videos[i] && cmsData.videos[i].thumb;
             cmsData.videos.splice(i, 1);
             renderVideos();
             const synced = await autoSyncAfterUpload('🗑️ Video dihapus');
-            if (synced && oldUrl) await safeRemoveOldFile(oldUrl);
+            if (synced) {
+                if (oldUrl) await safeRemoveOldFile(oldUrl);
+                if (oldThumb) await safeRemoveOldFile(oldThumb);
+            }
         }
         function moveVideo(index, dir) {
             if (uploadingItemUids.size > 0) return;
