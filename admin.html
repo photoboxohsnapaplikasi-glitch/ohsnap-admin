@@ -762,7 +762,49 @@
             await OhSnapCloud.removeFile(oldUrl);
         }
 
+        let isApplyingRemote = false;
+
+        async function executeAutoCloudSave() {
+            try {
+                const saved = await OhSnapCloud.save(cleanDataForCloud(cmsData), lastKnownCloudTime);
+                if (saved && saved.lastUpdated) {
+                    cmsData.lastUpdated = saved.lastUpdated;
+                    lastKnownCloudTime = saved.lastUpdated;
+                }
+                if (saved && saved._mergedFromRemote) {
+                    const prevSnap = JSON.parse(JSON.stringify(cmsData));
+                    cmsData = mergeWithDefault(saved);
+                    cmsData.lastUpdated = Number(saved.lastUpdated || Date.now());
+                    applySelectiveRenders(prevSnap, cmsData);
+                    markSynced(cmsData);
+                    setSyncBadge('ok', '⚡ Tersinkron (2 Perangkat)');
+                    setTimeout(() => {
+                        if (!autoCloudSyncTimer) setSyncBadge('ok', '☁️ Tersimpan di Cloud');
+                    }, 2200);
+                } else {
+                    markSynced(cmsData);
+                    setSyncBadge('ok', '☁️ Tersimpan di Cloud');
+                }
+            } catch (e) {
+                console.warn('Auto-save cloud tertunda:', e);
+                if (e && e.status === 401) {
+                    setSyncBadge('err', '⚠️ Sesi Habis (Login Ulang)');
+                } else {
+                    setSyncBadge('err', '⚠️ Gagal Sinkron (Klik Simpan)');
+                }
+            }
+        }
+
+        function flushPendingAutoSave() {
+            if (autoCloudSyncTimer) {
+                clearTimeout(autoCloudSyncTimer);
+                autoCloudSyncTimer = null;
+                executeAutoCloudSave();
+            }
+        }
+
         function persistData() {
+            if (isApplyingRemote) return;
             try {
                 if (!autoCloudSyncTimer && comparableCMS(cmsData) === localStorage.getItem('ohsnap_cloud_snapshot')) {
                     return;
@@ -777,26 +819,13 @@
                 setSyncBadge('err', '⚠️ Offline (Auto-Save Ditahan)');
                 return;
             }
-            setSyncBadge('wait', '⏳ Menyimpan ke Cloud...');
+            setSyncBadge('wait', '⏳ Menyimpan...');
             if (autoCloudSyncTimer) clearTimeout(autoCloudSyncTimer);
-            autoCloudSyncTimer = setTimeout(async () => {
+            // Debounce cepat 200ms agar perubahan terasa instan di semua perangkat
+            autoCloudSyncTimer = setTimeout(() => {
                 autoCloudSyncTimer = null;
-                try {
-                    const saved = await OhSnapCloud.save(cleanDataForCloud(cmsData), lastKnownCloudTime);
-                    if (saved && saved.lastUpdated) {
-                        cmsData.lastUpdated = saved.lastUpdated;
-                        lastKnownCloudTime = saved.lastUpdated;
-                    }
-                    markSynced(cmsData);
-                    setSyncBadge('ok', '☁️ Tersimpan di Cloud');
-                } catch (e) {
-                    console.warn('Auto-save cloud tertunda:', e);
-                    setSyncBadge('err', '⚠️ Gagal Sinkron (Klik Simpan)');
-                    if (e && e.code === 'CONFLICT') {
-                        showToast('⚠️ ' + e.message);
-                    }
-                }
-            }, 600);
+                executeAutoCloudSave();
+            }, 200);
         }
 
         function toggleMobileSidebar() { document.getElementById('sidebarEl').classList.toggle('active'); }
@@ -958,6 +987,12 @@
                     cmsData.lastUpdated = saved.lastUpdated;
                     lastKnownCloudTime = saved.lastUpdated;
                 }
+                if (saved && saved._mergedFromRemote) {
+                    const prevSnap = JSON.parse(JSON.stringify(cmsData));
+                    cmsData = mergeWithDefault(saved);
+                    cmsData.lastUpdated = Number(saved.lastUpdated || Date.now());
+                    applySelectiveRenders(prevSnap, cmsData);
+                }
                 markSynced(cmsData);
                 setSyncBadge('ok', '☁️ Tersimpan di Cloud');
                 showToast(successMsg + ' & tersinkron ke Cloud!');
@@ -1104,21 +1139,21 @@
                 quickAboutBox.style.display = (page === 'home') ? 'block' : 'none';
             }
 
+            const setInputIfNotFocused = (elOrId, val) => {
+                const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+                if (el && document.activeElement !== el) el.value = val;
+            };
             const b = cmsData.banners[page] || { titleId: '', titleEn: '', subId: '', subEn: '', btnId: '', btnEn: '', fullId: '', fullEn: '', imgUrl: '' };
-            document.getElementById('bannerTitleId').value = b.titleId !== undefined ? b.titleId : '';
-            document.getElementById('bannerTitleEn').value = b.titleEn !== undefined ? b.titleEn : '';
-            document.getElementById('bannerSubId').value = b.subId !== undefined ? b.subId : '';
-            document.getElementById('bannerSubEn').value = b.subEn !== undefined ? b.subEn : '';
+            setInputIfNotFocused('bannerTitleId', b.titleId !== undefined ? b.titleId : '');
+            setInputIfNotFocused('bannerTitleEn', b.titleEn !== undefined ? b.titleEn : '');
+            setInputIfNotFocused('bannerSubId', b.subId !== undefined ? b.subId : '');
+            setInputIfNotFocused('bannerSubEn', b.subEn !== undefined ? b.subEn : '');
             
-            const btnIdEl = document.getElementById('bannerBtnId');
-            const btnEnEl = document.getElementById('bannerBtnEn');
-            if (btnIdEl) btnIdEl.value = b.btnId !== undefined ? b.btnId : '';
-            if (btnEnEl) btnEnEl.value = b.btnEn !== undefined ? b.btnEn : '';
+            setInputIfNotFocused('bannerBtnId', b.btnId !== undefined ? b.btnId : '');
+            setInputIfNotFocused('bannerBtnEn', b.btnEn !== undefined ? b.btnEn : '');
 
-            const fullIdEl = document.getElementById('bannerFullId');
-            const fullEnEl = document.getElementById('bannerFullEn');
-            if (fullIdEl) fullIdEl.value = b.fullId !== undefined ? b.fullId : '';
-            if (fullEnEl) fullEnEl.value = b.fullEn !== undefined ? b.fullEn : '';
+            setInputIfNotFocused('bannerFullId', b.fullId !== undefined ? b.fullId : '');
+            setInputIfNotFocused('bannerFullEn', b.fullEn !== undefined ? b.fullEn : '');
 
             const imgInput = document.getElementById('bannerImgUrl');
             if (b.imgUrl && b.imgUrl.startsWith('data:image')) {
@@ -1196,7 +1231,7 @@
             const d = defaultCMS.titles;
             const setVal = (id, val, fallback) => {
                 const el = document.getElementById(id);
-                if (el) el.value = (val !== undefined && val !== null) ? val : (fallback || '');
+                if (el && document.activeElement !== el) el.value = (val !== undefined && val !== null) ? val : (fallback || '');
             };
             setVal('titleVideoId', t.titleVideoId, d.titleVideoId);
             setVal('titleVideoEn', t.titleVideoEn, d.titleVideoEn);
@@ -1431,17 +1466,21 @@
 
         function loadFooterState() {
             const f = cmsData.footer || defaultCMS.footer;
-            document.getElementById('footerBrand').value = f.brand !== undefined ? f.brand : '';
-            document.getElementById('footerBranches').value = f.branches !== undefined ? f.branches : '';
-            document.getElementById('footerIgName').value = f.igName !== undefined ? f.igName : '';
-            document.getElementById('footerIgUrl').value = f.igUrl !== undefined ? f.igUrl : '';
-            document.getElementById('footerTtName').value = f.ttName !== undefined ? f.ttName : '';
-            document.getElementById('footerTtUrl').value = f.ttUrl !== undefined ? f.ttUrl : '';
-            document.getElementById('footerCardTitleId').value = f.cardTitleId !== undefined ? f.cardTitleId : 'Find nearby OH SNAP! Studio';
-            document.getElementById('footerCardTitleEn').value = f.cardTitleEn !== undefined ? f.cardTitleEn : 'Find nearby OH SNAP! Studio';
-            document.getElementById('footerCardDescId').value = f.cardDescId !== undefined ? f.cardDescId : 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!';
-            document.getElementById('footerCardDescEn').value = f.cardDescEn !== undefined ? f.cardDescEn : 'Find the nearest booth and studio in your city to capture your special moments today!';
-            document.getElementById('footerCopyright').value = f.copyright !== undefined ? f.copyright : '';
+            const setF = (id, v) => {
+                const el = document.getElementById(id);
+                if (el && document.activeElement !== el) el.value = v;
+            };
+            setF('footerBrand', f.brand !== undefined ? f.brand : '');
+            setF('footerBranches', f.branches !== undefined ? f.branches : '');
+            setF('footerIgName', f.igName !== undefined ? f.igName : '');
+            setF('footerIgUrl', f.igUrl !== undefined ? f.igUrl : '');
+            setF('footerTtName', f.ttName !== undefined ? f.ttName : '');
+            setF('footerTtUrl', f.ttUrl !== undefined ? f.ttUrl : '');
+            setF('footerCardTitleId', f.cardTitleId !== undefined ? f.cardTitleId : 'Find nearby OH SNAP! Studio');
+            setF('footerCardTitleEn', f.cardTitleEn !== undefined ? f.cardTitleEn : 'Find nearby OH SNAP! Studio');
+            setF('footerCardDescId', f.cardDescId !== undefined ? f.cardDescId : 'Temukan booth dan studio terdekat di kotamu untuk abadikan momen serumu hari ini!');
+            setF('footerCardDescEn', f.cardDescEn !== undefined ? f.cardDescEn : 'Find the nearest booth and studio in your city to capture your special moments today!');
+            setF('footerCopyright', f.copyright !== undefined ? f.copyright : '');
         }
 
         function updateFooterState() {
@@ -1463,10 +1502,14 @@
 
         function loadColors() {
             const c = cmsData.colors || defaultCMS.colors;
-            document.getElementById('pickerPrimary').value = c.primary || '#ff1493'; document.getElementById('hexPrimary').value = c.primary || '#ff1493';
-            document.getElementById('pickerSecondary').value = c.secondary || '#2b4c7e'; document.getElementById('hexSecondary').value = c.secondary || '#2b4c7e';
-            document.getElementById('pickerBg').value = c.bg || '#fff0f5'; document.getElementById('hexBg').value = c.bg || '#fff0f5';
-            document.getElementById('pickerFooter').value = c.footer || '#18171d'; document.getElementById('hexFooter').value = c.footer || '#18171d';
+            const setC = (id, v) => {
+                const el = document.getElementById(id);
+                if (el && document.activeElement !== el) el.value = v;
+            };
+            setC('pickerPrimary', c.primary || '#ff1493'); setC('hexPrimary', c.primary || '#ff1493');
+            setC('pickerSecondary', c.secondary || '#2b4c7e'); setC('hexSecondary', c.secondary || '#2b4c7e');
+            setC('pickerBg', c.bg || '#fff0f5'); setC('hexBg', c.bg || '#fff0f5');
+            setC('pickerFooter', c.footer || '#18171d'); setC('hexFooter', c.footer || '#18171d');
         }
 
         function syncColor(type, val) {
@@ -1887,25 +1930,30 @@
             }
         }
 
-        async function saveAllCMS() {
+        async function saveAllCMS(forceOverwrite) {
             updateBannerState();
             updateTitlesState();
             updateFooterState();
             if (autoCloudSyncTimer) { clearTimeout(autoCloudSyncTimer); autoCloudSyncTimer = null; }
 
-            if (!isCloudReady) {
-                setSyncBadge('wait', '⏳ Memeriksa Cloud...');
+            if (!isCloudReady && !forceOverwrite) {
+                setSyncBadge('wait', '⏳ Menghubungkan Cloud...');
                 try {
                     const remoteCheck = await OhSnapCloud.load(true);
-                    if (remoteCheck && Object.keys(remoteCheck).length > 0 && Number(remoteCheck.lastUpdated || 0) > 0) {
-                        setSyncBadge('err', '⚠️ Konflik Data Cloud');
-                        showToast('⚠️ Cloud memiliki data yang belum dimuat. Muat ulang halaman terlebih dahulu agar tidak menimpa data admin lain.');
-                        return;
+                    if (remoteCheck && Object.keys(remoteCheck).length > 0) {
+                        const base = OhSnapCloud.getBaseCloudData() || remoteCheck;
+                        const merged = OhSnapCloud.deepMergeCMS(base, remoteCheck, cmsData, true);
+                        const prevSnap = JSON.parse(JSON.stringify(cmsData));
+                        cmsData = mergeWithDefault(merged);
+                        OhSnapCloud.setBaseCloudData(remoteCheck);
+                        lastKnownCloudTime = Number(remoteCheck.lastUpdated || Date.now());
+                        OhSnapCloud.setKnownCloudTime(lastKnownCloudTime);
+                        applySelectiveRenders(prevSnap, cmsData);
                     }
                     isCloudReady = true;
                 } catch (loadErr) {
                     setSyncBadge('err', '⚠️ Offline (Gagal Simpan)');
-                    showToast('⚠️ Tidak bisa menjangkau server Cloud. Perubahan belum dapat disimpan ke Cloud.');
+                    showToast('⚠️ Tidak bisa menjangkau server Cloud. Periksa koneksi internet Anda.');
                     return;
                 }
             }
@@ -1916,29 +1964,40 @@
 
             try {
                 const cleanPayload = cleanDataForCloud(cmsData);
-                const savedCloud = await OhSnapCloud.save(cleanPayload, lastKnownCloudTime);
+                const savedCloud = await OhSnapCloud.save(cleanPayload, lastKnownCloudTime, Boolean(forceOverwrite));
                 if (savedCloud && savedCloud.lastUpdated) {
                     cmsData.lastUpdated = savedCloud.lastUpdated;
                     lastKnownCloudTime = savedCloud.lastUpdated;
                 }
+                if (savedCloud && savedCloud._mergedFromRemote) {
+                    const prevSnap = JSON.parse(JSON.stringify(cmsData));
+                    cmsData = mergeWithDefault(savedCloud);
+                    cmsData.lastUpdated = Number(savedCloud.lastUpdated || Date.now());
+                    applySelectiveRenders(prevSnap, cmsData);
+                }
                 isCloudReady = true;
                 markSynced(cmsData);
                 setSyncBadge('ok', '☁️ Tersimpan di Cloud');
-                showToast('✅ Berhasil disimpan & disinkronkan ke semua perangkat secara global!');
+                showToast('✅ Tersimpan & langsung tersinkron ke semua perangkat!');
             } catch (err) {
                 console.error('Detail Error Simpan Cloud:', err);
-                setSyncBadge('err', '⚠️ Gagal Sinkron');
-                if (err && err.code === 'CONFLICT') {
-                    showToast('⚠️ ' + err.message);
+                if (err && err.code === 'CONFLICT' && !forceOverwrite) {
+                    return await saveAllCMS(true);
                 } else if (err && err.status === 401) {
+                    setSyncBadge('err', '⚠️ Sesi Habis');
                     alert('Sesi login Anda telah berakhir. Silakan login kembali.');
                     await logoutAdmin();
                 } else if (err && err.status) {
-                    const hint = (err.status === 403) ? ' - cek RLS/policy & jalankan supabase-setup.sql' :
-                                   (err.status === 404) ? ' - jalankan supabase-setup.sql terbaru di Supabase' : '';
+                    setSyncBadge('err', '⚠️ Gagal Sinkron (' + err.status + ')');
+                    const hint = (err.status === 403) ? ' - cek RLS/policy di Supabase' :
+                                   (err.status === 404) ? ' - cek fungsi RPC save_cms_secure di Supabase' : '';
                     showToast('⚠️ Server menolak (' + err.status + ')' + hint);
                 } else {
-                    showToast('⚠️ Tidak bisa menjangkau server cloud (jaringan/DNS/diblokir/project Supabase pause)');
+                    const detailMsg = (err && err.name === 'AbortError')
+                        ? 'Koneksi ke Supabase timeout (>14 detik)'
+                        : ((err && err.message) ? err.message : 'Jaringan terputus');
+                    setSyncBadge('err', '⚠️ Gagal Sinkron');
+                    showToast('⚠️ Gagal menyinkronkan ke Cloud: ' + detailMsg);
                 }
             }
         }
@@ -2008,6 +2067,13 @@
             clearNewAdminInputs();
             setTimeout(clearNewAdminInputs, 250);
 
+            // Simpan otomatis segera (0ms) saat fokus keluar dari kolom input
+            document.addEventListener('focusout', (ev) => {
+                if (ev && ev.target && ev.target.closest && ev.target.closest('.main-content')) {
+                    flushPendingAutoSave();
+                }
+            });
+
             try {
                 const remote = await OhSnapCloud.load(true);
                 if (remote && Object.keys(remote).length > 0) {
@@ -2015,18 +2081,20 @@
                     cmsData.lastUpdated = Number(remote.lastUpdated || Date.now());
                     lastKnownCloudTime = cmsData.lastUpdated;
                     OhSnapCloud.setKnownCloudTime(lastKnownCloudTime);
+                    OhSnapCloud.setBaseCloudData(remote);
                     isCloudReady = true;
                     saveCMSBackupToIDB(cmsData);
                     markSynced(cmsData);
                     initAllRenders();
                     clearNewAdminInputs();
                     setSyncBadge('ok', '☁️ Tersimpan di Cloud');
-                    showToast('☁️ Terhubung ke Cloud & data terbaru berhasil disinkronkan!');
+                    showToast('☁️ Terhubung ke Cloud & siap sinkron instan multi-perangkat!');
                 } else {
                     const initialPayload = cleanDataForCloud(cmsData);
                     const savedInit = await OhSnapCloud.save(initialPayload, 0);
                     lastKnownCloudTime = Number((savedInit && savedInit.lastUpdated) || Date.now());
                     OhSnapCloud.setKnownCloudTime(lastKnownCloudTime);
+                    OhSnapCloud.setBaseCloudData(cmsData);
                     isCloudReady = true;
                     markSynced(cmsData);
                     setSyncBadge('ok', '☁️ Tersimpan di Cloud');
@@ -2039,8 +2107,126 @@
                 showToast('⚠️ Tidak bisa menjangkau cloud - auto-save ditahan agar tidak menimpa data Cloud');
             }
 
+            // Aktifkan sinkronisasi instan lintas perangkat (HP <-> Laptop <-> Frontend)
+            OhSnapCloud.startLiveSync((remoteData) => {
+                handleIncomingRemoteCMS(remoteData);
+            });
+
+            // Sinkron instan antar tab di browser yang sama
+            window.addEventListener('storage', (ev) => {
+                if (ev && ev.key === 'ohsnap_cms_data' && ev.newValue) {
+                    try {
+                        const parsed = JSON.parse(ev.newValue);
+                        if (parsed && typeof parsed === 'object') {
+                            handleIncomingRemoteCMS(parsed);
+                        }
+                    } catch (e) {}
+                }
+            });
+
+            // Auto-refresh lembut untuk tabel Resend Softcopy saat tab aktif & tidak sedang mutasi
+            setInterval(() => {
+                const resendSec = document.getElementById('sec-resend');
+                if (resendSec && resendSec.classList.contains('active') && document.visibilityState === 'visible') {
+                    if (!resendLoading && activeSheetMutations === 0) {
+                        loadResendData(true);
+                    }
+                }
+            }, 8000);
+
             refreshServerAdmins();
         });
+
+        function captureDynamicFocus() {
+            const ae = document.activeElement;
+            if (!ae || (ae.tagName !== 'INPUT' && ae.tagName !== 'TEXTAREA')) return null;
+            const listEl = ae.closest('.dynamic-list');
+            const cardEl = ae.closest('.item-card');
+            if (!listEl || !cardEl || !listEl.id) return null;
+            const cards = Array.from(listEl.querySelectorAll('.item-card'));
+            const cardIdx = cards.indexOf(cardEl);
+            const fields = Array.from(cardEl.querySelectorAll('input[type="text"], textarea'));
+            const fieldIdx = fields.indexOf(ae);
+            if (cardIdx < 0 || fieldIdx < 0) return null;
+            let selStart = null, selEnd = null;
+            try { selStart = ae.selectionStart; selEnd = ae.selectionEnd; } catch (e) {}
+            return { containerId: listEl.id, cardIdx, fieldIdx, selStart, selEnd };
+        }
+
+        function restoreDynamicFocus(focusState) {
+            if (!focusState) return;
+            const listEl = document.getElementById(focusState.containerId);
+            if (!listEl) return;
+            const cards = listEl.querySelectorAll('.item-card');
+            const cardEl = cards[focusState.cardIdx];
+            if (!cardEl) return;
+            const fields = cardEl.querySelectorAll('input[type="text"], textarea');
+            const target = fields[focusState.fieldIdx];
+            if (!target) return;
+            target.focus();
+            try {
+                if (focusState.selStart !== null && focusState.selEnd !== null) {
+                    target.setSelectionRange(focusState.selStart, focusState.selEnd);
+                }
+            } catch (e) {}
+        }
+
+        function applySelectiveRenders(prevSnap, nextSnap) {
+            isApplyingRemote = true;
+            const focusState = captureDynamicFocus();
+            try {
+                const diff = (a, b) => JSON.stringify(a) !== JSON.stringify(b);
+                if (diff(prevSnap.banners, nextSnap.banners)) loadBannerByPage();
+                if (diff(prevSnap.titles, nextSnap.titles)) loadTitlesState();
+                if (diff(prevSnap.videos, nextSnap.videos)) renderVideos();
+                if (diff(prevSnap.studios, nextSnap.studios)) renderStudios();
+                if (diff(prevSnap.promos, nextSnap.promos)) renderPromos();
+                if (diff(prevSnap.frames, nextSnap.frames)) renderFrames();
+                if (diff(prevSnap.services, nextSnap.services)) renderServices();
+                if (diff(prevSnap.locations, nextSnap.locations)) renderLocations();
+                if (diff(prevSnap.footer, nextSnap.footer)) loadFooterState();
+                if (diff(prevSnap.colors, nextSnap.colors)) loadColors();
+                restoreDynamicFocus(focusState);
+            } finally {
+                isApplyingRemote = false;
+            }
+        }
+
+        function handleIncomingRemoteCMS(remoteData) {
+            if (!remoteData || typeof remoteData !== 'object') return;
+            const remoteTs = Number(remoteData.lastUpdated || 0);
+            if (remoteTs > 0 && remoteTs <= lastKnownCloudTime && comparableCMS(remoteData) === comparableCMS(cmsData)) {
+                return;
+            }
+            const base = OhSnapCloud.getBaseCloudData() || remoteData;
+            const merged = OhSnapCloud.deepMergeCMS(base, remoteData, cmsData, false);
+            const prevSnap = JSON.parse(JSON.stringify(cmsData));
+
+            OhSnapCloud.setBaseCloudData(remoteData);
+            if (remoteTs > lastKnownCloudTime) {
+                lastKnownCloudTime = remoteTs;
+                OhSnapCloud.setKnownCloudTime(lastKnownCloudTime);
+            }
+            isCloudReady = true;
+
+            cmsData = mergeWithDefault(merged);
+            cmsData.lastUpdated = Math.max(Number(cmsData.lastUpdated || 0), remoteTs);
+
+            applySelectiveRenders(prevSnap, cmsData);
+            saveCMSBackupToIDB(cmsData);
+            try {
+                localStorage.setItem('ohsnap_cloud_snapshot', comparableCMS(remoteData));
+                localStorage.setItem('ohsnap_cloud_synced_at', String(lastKnownCloudTime));
+                localStorage.setItem('ohsnap_cms_data', JSON.stringify(OhSnapCloud.stripSensitiveForPublic(cmsData)));
+            } catch (e) {}
+
+            if (!autoCloudSyncTimer) {
+                setSyncBadge('ok', '⚡ Tersinkron Live');
+                setTimeout(() => {
+                    if (!autoCloudSyncTimer) setSyncBadge('ok', '☁️ Tersimpan di Cloud');
+                }, 1800);
+            }
+        }
     </script>
 </body>
 </html>
