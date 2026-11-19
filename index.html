@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Admin - OH SNAP! Photobox</title>
+    <meta name="robots" content="noindex, nofollow">
     <meta name="description" content="Login Admin Dashboard OH SNAP! Photobox.">
+    <script>if (window.top !== window.self) { window.top.location = window.self.location; }</script>
     <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -86,8 +88,7 @@
             </div>
             <button type="submit" class="btn-login" id="btnLoginSubmit">Masuk ke Dashboard</button>
         </form>
-        <a href="https://photoboxohsnapaplikasi-glitch.github.io/ohsnap-frontend/" id="backToMainLink" class="back-link">← Kembali ke Halaman Utama</a>
-        <script>if(location.hostname.endsWith("ohsnap.web.id")){document.getElementById("backToMainLink").href="https://ohsnap.web.id";}</script>
+        <a href="https://ohsnap.web.id" id="backToMainLink" class="back-link">← Kembali ke Halaman Utama</a>
     </div>
 
     <script src="cms-cloud.js"></script>
@@ -107,7 +108,7 @@
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const u = document.getElementById('username').value.trim();
-            const p = document.getElementById('password').value.trim();
+            const p = document.getElementById('password').value;
             const errorBox = document.getElementById('errorBox');
             const btn = document.getElementById('btnLoginSubmit');
             errorBox.style.display = 'none';
@@ -148,7 +149,7 @@
                 btn.textContent = 'Masuk ke Dashboard';
                 btn.disabled = false;
                 const hint = (err && err.status === 404)
-                    ? 'Fungsi keamanan login belum aktif. Jalankan supabase-setup.sql terbaru di SQL Editor Supabase.'
+                    ? 'Layanan login sedang dalam pemeliharaan. Hubungi administrator.'
                     : 'Gagal menghubungi server Cloud (' + (err.message || 'Cek koneksi') + ').';
                 errorBox.textContent = hint;
                 errorBox.style.display = 'block';
