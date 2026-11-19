@@ -7,6 +7,8 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="description" content="Login Admin Dashboard OH SNAP! Photobox.">
     <script>if (window.top !== window.self) { window.top.location = window.self.location; }</script>
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
     <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -69,6 +71,10 @@
         .btn-login:hover { transform: translateY(-2px); }
         .back-link { display: inline-block; margin-top: 20px; color: #ff1493; text-decoration: none; font-size: 0.88rem; font-weight: 600; }
         .error-msg { color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; padding: 10px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 15px; display: none; text-align: left; }
+        :focus-visible { outline: 3px solid var(--primary, #ff1493); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+        }
     </style>
 </head>
 <body>
@@ -134,6 +140,8 @@
                     sessionStorage.setItem('ohsnap_admin_token', authRes.token);
                     sessionStorage.setItem('ohsnap_admin_logged', JSON.stringify(authRes.user || { username: u }));
                     sessionStorage.setItem('ohsnap_login_ticket', String(Date.now()));
+                    if (authRes.mustChangePassword) sessionStorage.setItem('ohsnap_must_change_pw', '1');
+                    else sessionStorage.removeItem('ohsnap_must_change_pw');
                     window.location.replace('admin');
                 } else {
                     failedCount++;

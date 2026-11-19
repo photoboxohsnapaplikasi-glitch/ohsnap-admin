@@ -26,5 +26,17 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/login",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/login.html",
+      "destination": "/",
+      "permanent": true
+    }
   ]
 }

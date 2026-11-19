@@ -7,6 +7,8 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="description" content="Dashboard Admin OH SNAP! Photobox.">
     <script>if (window.top !== window.self) { window.top.location = window.self.location; }</script>
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
     <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -143,6 +145,10 @@
             .main-content { margin-left: 0; max-width: 100%; padding: 60px 10px 16px 10px; }
             .top-bar { flex-direction: column; gap: 8px; align-items: stretch; text-align: center; }
         }
+        :focus-visible { outline: 3px solid var(--primary, #ff1493); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+        }
     </style>
     <script src="cms-cloud.js"></script>
     <script>
@@ -160,6 +166,7 @@
 
             if (hasTicket && loggedUser && hasToken) {
                 sessionStorage.removeItem('ohsnap_login_ticket');
+            sessionStorage.removeItem('ohsnap_must_change_pw');
                 sessionStorage.setItem('ohsnap_admin_active', '1');
             } else if (navType === 'reload' && isActiveTab && loggedUser && hasToken) {
                 sessionStorage.setItem('ohsnap_admin_active', '1');
@@ -208,9 +215,10 @@
     <main class="main-content">
         <div class="top-bar">
             <h1 id="pageTitle">Pengaturan Banner & Hero Title</h1>
-            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;"><span id="syncStatusBadge" style="font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:50px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">☁️ Memuat Cloud...</span><button type="button" id="btnCleanOrphans" style="display:none; background:#f59e0b; color:#fff; border:none; padding:6px 10px; border-radius:50px; font-weight:700; font-size:0.74rem; cursor:pointer;" onclick="cleanOrphanStorageFiles()">🧹 Bersihkan File Yatim</button><button type="button" style="background:#2b4c7e; color:#fff; border:none; padding:6px 12px; border-radius:50px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="downloadCMSBackup()">📥 Backup JSON</button><button class="btn-save-all" onclick="saveAllCMS()">💾 Simpan Semua Perubahan</button></div>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;"><span id="syncStatusBadge" style="font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:50px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">☁️ Memuat Cloud...</span><button type="button" id="btnCleanOrphans" style="display:none; background:#f59e0b; color:#fff; border:none; padding:6px 10px; border-radius:50px; font-weight:700; font-size:0.74rem; cursor:pointer;" onclick="cleanOrphanStorageFiles()">🧹 Bersihkan File Yatim</button><button type="button" style="background:#475569; color:#fff; border:none; padding:6px 12px; border-radius:50px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="openCmsHistoryModal()">🕒 Riwayat</button><button type="button" style="background:#2b4c7e; color:#fff; border:none; padding:6px 12px; border-radius:50px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="downloadCMSBackup()">📥 Backup JSON</button><button class="btn-save-all" onclick="saveAllCMS()">💾 Simpan Semua Perubahan</button></div>
         </div>
         <div id="sessionDraftBanner" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:10px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; font-size:0.8rem; line-height:1.45;"></div>
+        <div id="defaultPwBanner" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:10px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:0.8rem; line-height:1.45;"></div>
 
         <!-- 1. BANNER & HERO TITLE -->
         <section id="sec-banner" class="admin-section active">
@@ -470,6 +478,17 @@
         </section>
     </main>
 
+    <div id="cmsHistoryModal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:10000; align-items:center; justify-content:center; padding:16px;">
+        <div style="background:#fff; width:100%; max-width:560px; max-height:82vh; overflow-y:auto; border-radius:14px; padding:18px; box-shadow:0 20px 50px rgba(0,0,0,0.25); border:1px solid var(--border-color);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:12px;">
+                <h3 id="historyModalTitle" style="font-size:1rem; color:var(--secondary); font-weight:800;">🕒 Riwayat Versi Cloud (20 Terakhir)</h3>
+                <button type="button" onclick="closeCmsHistoryModal()" style="background:#f1f5f9; border:none; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer; color:#334155;">✕ Tutup</button>
+            </div>
+            <p style="font-size:0.76rem; color:#64748b; margin-bottom:10px;">Setiap penyimpanan ke Cloud otomatis menyimpan salinan versi sebelumnya. Klik <b>Pulihkan</b> untuk mengembalikan konten ke versi tersebut.</p>
+            <div id="cmsHistoryList" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+    </div>
+
     <div id="toast" class="toast-notif">✅ Berhasil disimpan!</div>
 
     <script>
@@ -515,30 +534,6 @@
                 };
                 req.onsuccess = function(e) { resolve(e.target.result); };
                 req.onerror = function(e) { reject(e.target.error); };
-            });
-        }
-
-        async function saveVideoBufferToIDB(key, file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    try {
-                        const arrayBuffer = e.target.result;
-                        const db = await openMediaDB();
-                        const tx = db.transaction('media', 'readwrite');
-                        tx.objectStore('media').put({
-                            buffer: arrayBuffer,
-                            type: file.type || 'video/mp4',
-                            name: file.name
-                        }, key);
-                        tx.oncomplete = () => resolve();
-                        tx.onerror = (err) => reject(err.target.error);
-                    } catch (err) {
-                        reject(err);
-                    }
-                };
-                reader.onerror = (err) => reject(err);
-                reader.readAsArrayBuffer(file);
             });
         }
 
@@ -1576,16 +1571,12 @@
                 const isUp = uploadingItemUids.has(uid);
                 const lockAttr = isUp ? 'disabled style="opacity:0.5;cursor:wait;"' : '';
                 let navHtml = total > 5 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveVideo(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveVideo(${i}, 1)">&gt;</button>` : ''}</div>` : '';
-                const isIdb = v.url && v.url.startsWith('idb://');
-                const idbKey = isIdb ? v.url.replace('idb://', '') : '';
-                const inputVal = isIdb ? '' : (v.url || '');
-                const inputPlaceholder = isIdb ? `✅ File MP4 Terupload: ${v.fileName || 'Video.mp4'}` : 'https://www.instagram.com/... atau Upload MP4 di bawah';
+                const inputVal = v.url || '';
+                const inputPlaceholder = 'https://www.instagram.com/... atau Upload MP4 di bawah';
                 
                 let previewBadge = '';
                 if (isUp) {
                     previewBadge = `<div class="media-preview-box" style="color:#ca8a04;"><span>⏳ Sedang mengunggah video ke Cloud...</span></div>`;
-                } else if (isIdb) {
-                    previewBadge = `<div class="media-preview-box"><video data-admin-idb="${escAttr(idbKey)}" muted playsinline loop controls controlsList="nodownload" oncontextmenu="return false;"></video><span>🎬 Video MP4 Siap Diputar (${escAttr(v.fileName || 'MP4')})</span></div>`;
                 } else if (v.url && v.url !== '#' && v.url.trim() !== '') {
                     previewBadge = `<div class="media-preview-box"><span>🔗 Link Video Aktif: ${escAttr(v.url.slice(0, 35))}...</span></div>`;
                 }
@@ -1602,17 +1593,7 @@
             });
             c.innerHTML = cards.join('');
 
-            setTimeout(async () => {
-                const adminVids = document.querySelectorAll('video[data-admin-idb]');
-                for (const vidEl of adminVids) {
-                    const key = vidEl.getAttribute('data-admin-idb');
-                    const record = await getMediaFromIDB(key);
-                    if (record) {
-                        const blob = (record instanceof Blob) ? record : new Blob([record.buffer], { type: record.type || 'video/mp4' });
-                        vidEl.src = URL.createObjectURL(blob);
-                    }
-                }
-            }, 100);
+
         }
         function addVideoItem() { cmsData.videos.push({_uid: genItemUid(), title:'Baru', url:'', linkUrl:''}); persistData(); renderVideos(); }
         async function removeVideo(i) {
@@ -2335,11 +2316,19 @@
             } catch (e) { return {}; }
         }
 
+        let adminListError = '';
+        let adminListLoading = true;
+
         function renderAdminTable() {
             const tb = document.getElementById('adminTableBody');
             if (!tb) return;
+            if (adminListError && (!serverAdminList || serverAdminList.length === 0)) {
+                tb.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#dc2626; padding:16px;">⚠️ Gagal memuat daftar admin: ${escAttr(adminListError)} <button type="button" onclick="refreshServerAdmins()" style="margin-left:8px; background:var(--secondary); color:#fff; border:none; padding:4px 10px; border-radius:6px; font-weight:700; font-size:0.74rem; cursor:pointer;">🔄 Coba Lagi</button></td></tr>`;
+                return;
+            }
             if (!serverAdminList || serverAdminList.length === 0) {
-                tb.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; padding:15px;">Memuat daftar akun admin dari server...</td></tr>`;
+                const msg = adminListLoading ? '⏳ Memuat daftar akun admin dari server...' : 'Belum ada akun admin terdaftar.';
+                tb.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#999; padding:15px;">${msg}</td></tr>`;
                 return;
             }
             const me = getCurrentLoggedAdmin();
@@ -2370,15 +2359,22 @@
         }
 
         async function refreshServerAdmins() {
+            adminListLoading = true;
+            adminListError = '';
+            if (!serverAdminList || serverAdminList.length === 0) renderAdminTable();
             try {
                 const list = await OhSnapCloud.listAdmins();
+                adminListLoading = false;
                 if (Array.isArray(list)) {
                     serverAdminList = list;
                     renderAdminTable();
                 }
             } catch (e) {
+                adminListLoading = false;
                 console.warn('Gagal mengambil daftar admin:', e);
+                adminListError = (e && e.message) ? e.message : 'Kendala jaringan ke server.';
                 if (e && e.status === 401) handleExpiredSessionNotice();
+                renderAdminTable();
             }
         }
 
@@ -2424,7 +2420,10 @@
                 await OhSnapCloud.changeAdminPassword(oldP, newP);
                 if (oldEl) oldEl.value = '';
                 if (newEl) newEl.value = '';
-                showToast('✅ Password akun Anda berhasil diubah!');
+                sessionStorage.removeItem('ohsnap_must_change_pw');
+                const pwBan = document.getElementById('defaultPwBanner');
+                if (pwBan) { pwBan.style.display = 'none'; pwBan.innerHTML = ''; }
+                showToast('✅ Password diubah & seluruh sesi lama di perangkat lain telah dimatikan!');
             } catch (err) {
                 alert('⚠️ Gagal mengganti password: ' + (err.message || err));
             }
@@ -2588,6 +2587,7 @@
 
             initAllRenders();
             updateOrphanButton();
+            checkDefaultPasswordWarning();
             renderResendTable();
             // Lazy-load Spreadsheet hanya jika tab Resend sedang terbuka (hemat kuota & cepat saat buka dashboard)
             const resendSecEl = document.getElementById('sec-resend');
@@ -2669,7 +2669,7 @@
                 }
             });
 
-            // Auto-refresh lembut untuk tabel Resend Softcopy saat tab aktif & tidak sedang mutasi/error auth
+            // Auto-refresh ringan untuk tabel Resend Softcopy (tiap 60 detik saat tab aktif, hemat kuota Apps Script)
             setInterval(() => {
                 const resendSec = document.getElementById('sec-resend');
                 if (resendSec && resendSec.classList.contains('active') && document.visibilityState === 'visible') {
@@ -2677,7 +2677,7 @@
                         loadResendData(true);
                     }
                 }
-            }, 8000);
+            }, 60000);
 
             refreshServerAdmins();
         });
@@ -2772,6 +2772,84 @@
                 }, 1800);
             }
         }
+
+        function checkDefaultPasswordWarning() {
+            const el = document.getElementById('defaultPwBanner');
+            if (!el) return;
+            if (sessionStorage.getItem('ohsnap_must_change_pw') === '1') {
+                el.innerHTML = '<b>⚠️ Peringatan Keamanan:</b> Akun Anda masih menggunakan password bawaan (<b>ohsnap</b>). Segera ganti password Anda di menu <b>11. Kelola Admin</b> agar keamanan dashboard terjaga. ' +
+                    '<button type="button" onclick="const b=document.querySelector(\'button[onclick*=sec-admins]\');if(b)b.click();" style="margin-left:8px; background:#d97706; color:#fff; border:none; padding:4px 10px; border-radius:6px; font-weight:700; font-size:0.74rem; cursor:pointer;">🔒 Ganti Password Sekarang</button>';
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+                el.innerHTML = '';
+            }
+        }
+
+        function closeCmsHistoryModal() {
+            const m = document.getElementById('cmsHistoryModal');
+            if (m) m.style.display = 'none';
+        }
+
+        async function openCmsHistoryModal() {
+            const m = document.getElementById('cmsHistoryModal');
+            const listEl = document.getElementById('cmsHistoryList');
+            if (!m || !listEl) return;
+            m.style.display = 'flex';
+            listEl.innerHTML = '<div style="text-align:center; padding:18px; color:#64748b; font-size:0.82rem;">⏳ Memuat riwayat versi dari Cloud...</div>';
+            try {
+                const items = await OhSnapCloud.listCmsHistory();
+                if (!Array.isArray(items) || items.length === 0) {
+                    listEl.innerHTML = '<div style="text-align:center; padding:18px; color:#64748b; font-size:0.82rem;">Belum ada riwayat versi tersimpan. Riwayat akan tercatat otomatis setiap kali ada perubahan konten baru.</div>';
+                    return;
+                }
+                const htmlItems = items.map(h => {
+                    let waktu = '-';
+                    try {
+                        waktu = new Date(h.created_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'medium', timeStyle: 'medium' }) + ' WIB';
+                    } catch (e) { waktu = String(h.created_at || '-'); }
+                    const previewTitle = h.home_title ? ('Judul Home: "' + escAttr(String(h.home_title).slice(0, 48)) + '"') : 'Snapshot CMS';
+                    return `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; flex-wrap:wrap;">
+                        <div style="font-size:0.78rem; color:#334155;">
+                            <div style="font-weight:700; color:var(--secondary);">Versi #${Number(h.id)} &bull; ${escAttr(waktu)}</div>
+                            <div style="color:#64748b; margin-top:2px;">Oleh: <b>${escAttr(h.saved_by || 'admin')}</b> &bull; ${previewTitle}</div>
+                        </div>
+                        <button type="button" onclick="restoreCmsHistoryItem(${Number(h.id)})" style="background:var(--primary); color:#fff; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.74rem; cursor:pointer;">↩️ Pulihkan</button>
+                    </div>`;
+                });
+                listEl.innerHTML = htmlItems.join('');
+            } catch (err) {
+                if (err && err.status === 401) handleExpiredSessionNotice();
+                listEl.innerHTML = `<div style="padding:14px; color:#dc2626; font-size:0.8rem;">⚠️ ${escAttr(err && err.message ? err.message : 'Gagal memuat riwayat versi.')}</div>`;
+            }
+        }
+
+        async function restoreCmsHistoryItem(historyId) {
+            if (!confirm('Pulihkan seluruh konten website ke Versi #' + historyId + '? (Versi saat ini akan otomatis disimpan terlebih dahulu ke riwayat).')) return;
+            try {
+                showToast('⏳ Memulihkan versi #' + historyId + '...');
+                const restored = await OhSnapCloud.restoreCmsVersion(historyId);
+                if (restored && typeof restored === 'object') {
+                    const prevSnap = JSON.parse(JSON.stringify(cmsData));
+                    cmsData = mergeWithDefault(restored);
+                    cmsData.lastUpdated = Number(restored.lastUpdated || 0);
+                    lastKnownCloudTime = cmsData.lastUpdated;
+                    OhSnapCloud.setKnownCloudTime(lastKnownCloudTime);
+                    OhSnapCloud.setBaseCloudData(restored);
+                    isCloudReady = true;
+                    autoSavePausedReason = '';
+                    applySelectiveRenders(prevSnap, cmsData);
+                    markSynced(cmsData);
+                    setSyncBadge('ok', '☁️ Tersimpan di Cloud');
+                    closeCmsHistoryModal();
+                    showToast('✅ Konten berhasil dipulihkan ke Versi #' + historyId + '!');
+                }
+            } catch (err) {
+                if (err && err.status === 401) handleExpiredSessionNotice();
+                alert('⚠️ Gagal memulihkan versi: ' + (err && err.message ? err.message : err));
+            }
+        }
+
     </script>
 </body>
 </html>
