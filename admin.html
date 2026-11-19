@@ -429,8 +429,13 @@
 
         <!-- 11. ADMIN -->
         <section id="sec-admins" class="admin-section">
-            <div class="sec-header"><h2>Kelola Admin (Akun Tidak Terbatas)</h2></div>
-            <div class="form-grid" style="background:#fdf2f8; padding:10px; border-radius:8px; border:1px solid #fbcfe8; margin-bottom:10px;">
+            <div class="sec-header">
+                <h2>Kelola Admin (Akun Tidak Terbatas)</h2>
+                <button type="button" id="btnDebugLoginIp" class="btn-add" style="display:none; background:var(--secondary);" onclick="runLoginIpDiagnostic()">🔍 Cek IP Login (Owner)</button>
+            </div>
+            <div id="ipDiagResult" style="display:none; margin-bottom:10px; padding:10px 12px; border-radius:8px; background:#f0f9ff; border:1px solid #bae6fd; color:#0c4a6e; font-size:0.78rem; line-height:1.5; font-family:monospace; white-space:pre-wrap;"></div>
+            <div id="nonOwnerAdminNote" style="display:none; margin-bottom:10px; padding:8px 12px; border-radius:8px; background:#f8fafc; border:1px solid #cbd5e1; color:#475569; font-size:0.78rem;">ℹ️ Penambahan &amp; penghapusan akun admin hanya dapat dilakukan oleh <b>Owner</b>. Anda tetap dapat mengganti password akun Anda di bawah ini.</div>
+            <div id="addAdminFormBox" class="form-grid" style="background:#fdf2f8; padding:10px; border-radius:8px; border:1px solid #fbcfe8; margin-bottom:10px;">
                 <div class="form-group"><label>Nama</label><input type="text" id="newAdminName" placeholder="Nama Admin" autocomplete="off"></div>
                 <div class="form-group"><label>Username</label><input type="text" id="newAdminUser" placeholder="username_unik" autocomplete="off"></div>
                 <div class="form-group">
@@ -786,17 +791,7 @@
             if (!obj || typeof obj !== 'object') return;
             if (window.OhSnapCloud && typeof OhSnapCloud.ensureStableItemUids === 'function') {
                 OhSnapCloud.ensureStableItemUids(obj);
-                return;
             }
-            ['videos', 'studios', 'promos', 'frames', 'services', 'locations'].forEach(arrKey => {
-                if (Array.isArray(obj[arrKey])) {
-                    obj[arrKey].forEach((item, idx) => {
-                        if (item && typeof item === 'object' && !item._uid) {
-                            item._uid = 'mig-' + arrKey + '-' + (idx + 1);
-                        }
-                    });
-                }
-            });
         }
 
         function findItemByUid(arrName, uid) {
@@ -2049,7 +2044,9 @@
             try { localStorage.removeItem('ohsnap_resend_overrides'); } catch (e) {}
 
             const offset = appendMore ? resendList.length : 0;
-            const reqPayload = { action: 'list', token: tok, limit: RESEND_PAGE_LIMIT, offset: offset };
+            // Saat refresh/polling, pertahankan jumlah baris yang sudah diperluas pengguna agar tidak menciut balik ke 100
+            const fetchLimit = appendMore ? RESEND_PAGE_LIMIT : Math.max(RESEND_PAGE_LIMIT, (resendList && resendList.length) ? resendList.length : RESEND_PAGE_LIMIT);
+            const reqPayload = { action: 'list', token: tok, limit: fetchLimit, offset: offset };
 
             try {
                 let data;
@@ -2390,6 +2387,17 @@
                 return;
             }
             const me = getCurrentLoggedAdmin();
+            const myServerRow = serverAdminList.find(x => (me.id && Number(me.id) === Number(x.id)) || (me.username && String(x.username || '').toLowerCase() === String(me.username).toLowerCase()));
+            const callerRole = String((myServerRow && myServerRow.role) || me.role || 'admin').toLowerCase();
+            const isCallerOwner = callerRole === 'owner';
+
+            const addBox = document.getElementById('addAdminFormBox');
+            const nonOwnerNote = document.getElementById('nonOwnerAdminNote');
+            const ipBtn = document.getElementById('btnDebugLoginIp');
+            if (addBox) addBox.style.display = isCallerOwner ? 'grid' : 'none';
+            if (nonOwnerNote) nonOwnerNote.style.display = isCallerOwner ? 'none' : 'block';
+            if (ipBtn) ipBtn.style.display = isCallerOwner ? 'inline-block' : 'none';
+
             const ownerCount = serverAdminList.filter(x => (x.role || 'admin') === 'owner').length;
             const rows = [];
             serverAdminList.forEach((a, i) => {
@@ -2401,9 +2409,11 @@
                     : '<span style="background:#e0f2fe;color:#0369a1;padding:2px 7px;border-radius:6px;font-weight:700;font-size:0.68rem;">ADMIN</span>';
                 const actionHtml = isSelf
                     ? '<span style="color:#64748b;font-size:0.72rem;font-weight:700;">Akun Anda</span>'
-                    : (isLastOwner
-                        ? '<span style="color:#9ca3af;font-size:0.72rem;">Owner Utama</span>'
-                        : `<button class="btn-remove" onclick="deleteAdmin(${Number(a.id)})">Hapus</button>`);
+                    : (!isCallerOwner
+                        ? '<span style="color:#9ca3af;font-size:0.72rem;">Khusus Owner</span>'
+                        : (isLastOwner
+                            ? '<span style="color:#9ca3af;font-size:0.72rem;">Owner Utama</span>'
+                            : `<button class="btn-remove" onclick="deleteAdmin(${Number(a.id)})">Hapus</button>`));
                 rows.push(`
                     <tr>
                         <td>${i + 1}</td>
@@ -2439,6 +2449,25 @@
                 adminListError = (e && e.message) ? e.message : 'Kendala jaringan ke server.';
                 if (e && e.status === 401) handleExpiredSessionNotice();
                 renderAdminTable();
+            }
+        }
+
+        async function runLoginIpDiagnostic() {
+            const box = document.getElementById('ipDiagResult');
+            if (!box) return;
+            box.style.display = 'block';
+            box.textContent = '⏳ Memeriksa header IP yang diterima PostgREST Supabase...';
+            try {
+                const info = await OhSnapCloud.debugLoginIp();
+                box.textContent =
+                    '🔍 Diagnostik IP Login (PostgREST Supabase):\n' +
+                    '• IP Terbaca (parsed_ip) : ' + (info.parsed_ip || 'unknown') + '\n' +
+                    '• Sumber Tepercaya       : ' + (info.trusted_source || 'cf-connecting-ip') + '\n' +
+                    '• cf-connecting-ip       : ' + (info.cf_connecting_ip || '(kosong)') + '\n' +
+                    '• x-real-ip              : ' + (info.x_real_ip || '(kosong)') + '\n' +
+                    '• x-forwarded-for        : ' + (info.x_forwarded_for || '(kosong)');
+            } catch (err) {
+                box.textContent = '⚠️ ' + (err && err.message ? err.message : 'Gagal menjalankan diagnostik IP.');
             }
         }
 
