@@ -1525,8 +1525,9 @@
         }
 
         let resendLoading = false;
+        let activeSheetMutations = 0;
         async function loadResendData(silent) {
-            if (resendLoading) return;
+            if (resendLoading || activeSheetMutations > 0) return;
             resendLoading = true;
             const btn = document.getElementById('btnRefreshResend');
             if (btn) {
@@ -1569,6 +1570,7 @@
                     throw new Error('Format data dari Apps Script tidak dikenali.');
                 }
 
+                if (activeSheetMutations > 0) return;
                 resendList = (data || []).map((item, idx) => {
                     item._sheetRow = Number(item._sheetRow) || (item.id !== undefined ? Number(item.id) + 1 : idx + 3);
                     return item;
@@ -1729,8 +1731,8 @@
                                 <a href="${escAttr(emailUrl)}" ${emailTargetAttr} class="btn-action-email">✉️ Email</a>
                             </div>
                         </td>
-                        <td><button class="btn-toggle-status ${isSudah?'btn-status-sudah':'btn-status-belum'}" onclick="toggleStatus(${i},'${isSudah ? 'Sudah' : 'Belum'}')">${isSudah?'✔ SUDAH':'❗ BELUM'}</button></td>
-                        <td><button class="btn-remove" onclick="delResend(${i})">Hapus</button></td>
+                        <td><button class="btn-toggle-status ${isSudah?'btn-status-sudah':'btn-status-belum'}" ${r._updatingStatus ? 'disabled style="opacity:0.65; cursor:wait;"' : ''} onclick="toggleStatus(${i},'${isSudah ? 'Sudah' : 'Belum'}')">${r._updatingStatus ? '⏳ Menyimpan...' : (isSudah?'✔ SUDAH':'❗ BELUM')}</button></td>
+                        <td><button class="btn-remove" ${r._updatingStatus ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="delResend(${i})">Hapus</button></td>
                     </tr>`);
             });
             tb.innerHTML = rowsHtml.join('');
@@ -1738,9 +1740,11 @@
 
         async function toggleStatus(idx, curr) {
             const r = resendList[idx];
-            if (!r) return;
+            if (!r || r._updatingStatus) return;
             const next = (curr === 'Sudah' || curr === 'SUDAH') ? 'Belum' : 'Sudah';
+            r._updatingStatus = true;
             r.tindak_lanjut = next;
+            activeSheetMutations++;
             renderResendTable();
             showToast('⏳ Memperbarui status di Spreadsheet...');
 
@@ -1758,13 +1762,17 @@
                 const out = await OhSnapCloud.sheetFetch('POST', payload, 45000);
                 if (!out || out.status !== 'success') throw new Error((out && out.message) || 'Apps Script menolak perubahan status.');
                 if (out.matched === false) throw new Error('Baris tidak ditemukan di Spreadsheet. Klik Refresh lalu coba lagi.');
-                saveCachedResendList(resendList);
+                showResendError('');
                 showToast('✅ Status berhasil diubah menjadi ' + next + ' di Spreadsheet!');
             } catch (e) {
                 r.tindak_lanjut = curr;
-                renderResendTable();
                 showResendError(e && e.message ? e.message : String(e));
                 showToast('⚠️ Gagal memperbarui status di Spreadsheet');
+            } finally {
+                r._updatingStatus = false;
+                activeSheetMutations = Math.max(0, activeSheetMutations - 1);
+                saveCachedResendList(resendList);
+                renderResendTable();
             }
         }
 
@@ -1774,6 +1782,7 @@
             if (!confirm(`Hapus permanen data "${r.nama || 'Pelanggan'}" dari Dashboard & Google Spreadsheet?`)) return;
 
             const backupRow = resendList[idx];
+            activeSheetMutations++;
             resendList.splice(idx, 1);
             renderResendTable();
             showToast('⏳ Menghapus data dari Google Spreadsheet...');
@@ -1799,6 +1808,8 @@
                 renderResendTable();
                 showResendError(e && e.message ? e.message : String(e));
                 showToast('⚠️ Gagal menghapus data di Spreadsheet');
+            } finally {
+                activeSheetMutations = Math.max(0, activeSheetMutations - 1);
             }
         }
 
