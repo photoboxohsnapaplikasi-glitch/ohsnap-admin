@@ -1996,6 +1996,7 @@
 
         let resendLoading = false;
         let activeSheetMutations = 0;
+        let resendAutoPollPaused = false;
 
         async function loadResendData(silent, appendMore) {
             if (resendLoading || activeSheetMutations > 0) return;
@@ -2062,6 +2063,8 @@
                 resendTotalCount = (data && typeof data.total === 'number') ? data.total : resendList.length;
                 resendHasLoadedOnce = true;
 
+                resendAutoPollPaused = false;
+                resendLoading = false;
                 saveCachedResendList(resendList);
                 showResendError('');
                 renderResendTable();
@@ -2071,11 +2074,32 @@
                 }
             } catch (e) {
                 console.error('Gagal mengambil data Spreadsheet:', e);
+                resendLoading = false;
                 const isAuth = Boolean(e && e.isAuth);
                 const errMsg = e && e.message ? e.message : String(e);
                 if (isAuth) {
-                    handleExpiredSessionNotice();
-                    showResendError(errMsg, true);
+                    resendAutoPollPaused = true;
+                    // Cek dulu ke Supabase apakah sesi login benar-benar habis atau hanya Apps Script yang belum diizinkan/di-deploy
+                    let supabaseSessionStillValid = false;
+                    try {
+                        const admList = await OhSnapCloud.listAdmins();
+                        if (Array.isArray(admList)) supabaseSessionStillValid = true;
+                    } catch (chkErr) {
+                        supabaseSessionStillValid = false;
+                    }
+
+                    if (supabaseSessionStillValid) {
+                        showResendError(
+                            'Sesi login Anda masih aktif, tetapi Google Apps Script menolak verifikasi token. ' +
+                            'Pastikan di editor Apps Script: (1) sudah tempel Code.gs terbaru & Ctrl+S, ' +
+                            '(2) jalankan fungsi cekIzinAppsScript lalu klik Izinkan, dan ' +
+                            '(3) klik Deploy -> Manage deployments -> Edit -> Version: New version -> Deploy.',
+                            false
+                        );
+                    } else {
+                        handleExpiredSessionNotice();
+                        showResendError(errMsg, true);
+                    }
                 } else if (resendList && resendList.length > 0) {
                     showResendError(errMsg + ' (Menampilkan ' + resendList.length + ' data terakhir dari sesi ini — klik Refresh untuk sinkron ulang).', false);
                 } else {
@@ -2231,8 +2255,12 @@
             try {
                 const out = await OhSnapCloud.sheetFetch('POST', payload, 45000);
                 if (out && out.status === 'unauthorized') {
-                    handleExpiredSessionNotice();
-                    throw new Error(out.message || 'Sesi login berakhir.');
+                    let sbOk = false;
+                    try { if (Array.isArray(await OhSnapCloud.listAdmins())) sbOk = true; } catch (ce) {}
+                    if (!sbOk) handleExpiredSessionNotice();
+                    throw new Error(sbOk
+                        ? 'Google Apps Script menolak verifikasi token. Pastikan cekIzinAppsScript sudah diizinkan & Deploy versi baru.'
+                        : (out.message || 'Sesi login berakhir.'));
                 }
                 if (!out || out.status !== 'success') throw new Error((out && out.message) || 'Apps Script menolak perubahan status.');
                 if (out.matched === false) throw new Error('Baris tidak ditemukan di Spreadsheet. Klik Refresh lalu coba lagi.');
@@ -2277,8 +2305,12 @@
             try {
                 const out = await OhSnapCloud.sheetFetch('POST', payload, 45000);
                 if (out && out.status === 'unauthorized') {
-                    handleExpiredSessionNotice();
-                    throw new Error(out.message || 'Sesi login berakhir.');
+                    let sbOk = false;
+                    try { if (Array.isArray(await OhSnapCloud.listAdmins())) sbOk = true; } catch (ce) {}
+                    if (!sbOk) handleExpiredSessionNotice();
+                    throw new Error(sbOk
+                        ? 'Google Apps Script menolak verifikasi token. Pastikan cekIzinAppsScript sudah diizinkan & Deploy versi baru.'
+                        : (out.message || 'Sesi login berakhir.'));
                 }
                 if (!out || out.status !== 'success') throw new Error((out && out.message) || 'Apps Script menolak penghapusan.');
                 if (out.matched === false) throw new Error('Baris tidak ditemukan di Spreadsheet (mungkin sudah terhapus). Klik Refresh.');
@@ -2637,11 +2669,11 @@
                 }
             });
 
-            // Auto-refresh lembut untuk tabel Resend Softcopy saat tab aktif & tidak sedang mutasi
+            // Auto-refresh lembut untuk tabel Resend Softcopy saat tab aktif & tidak sedang mutasi/error auth
             setInterval(() => {
                 const resendSec = document.getElementById('sec-resend');
                 if (resendSec && resendSec.classList.contains('active') && document.visibilityState === 'visible') {
-                    if (!resendLoading && activeSheetMutations === 0) {
+                    if (!resendLoading && activeSheetMutations === 0 && !resendAutoPollPaused) {
                         loadResendData(true);
                     }
                 }
