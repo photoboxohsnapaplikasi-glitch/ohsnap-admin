@@ -2316,7 +2316,7 @@
 
                 rowsHtml.push(`
                     <tr class="${isSudah?'row-sudah':'row-belum'}">
-                        <td>${i + 1}</td>
+                        <td>${r.no || (i + 1)}</td>
                         <td>${escAttr(parsedIn.date)}</td>
                         <td>${escAttr(parsedIn.time)}</td>
                         <td>${escAttr(finalTglFoto)}</td>
