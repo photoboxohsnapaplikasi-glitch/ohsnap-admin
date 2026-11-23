@@ -1450,17 +1450,10 @@
         async function uploadVideoFile(inputEl, arrName, itemUid, propName) {
             const file = inputEl.files[0];
             if (!file) return;
-            if (file.size > 50 * 1024 * 1024) {
-                alert('Ukuran 1 file video maksimal 50 MB (batas per-file Supabase Free Tier). Silakan kompres videonya terlebih dahulu.');
+            if (file.size > 3 * 1024 * 1024) {
+                alert('Video terlalu besar (maks 3 MB). Kompres dulu ke 720p, atau gunakan link YouTube/TikTok.');
                 inputEl.value = '';
                 return;
-            }
-            if (file.size > 8 * 1024 * 1024) {
-                const mb = (file.size / (1024 * 1024)).toFixed(1);
-                if (!confirm('Ukuran video ' + mb + ' MB (disarankan di bawah 5-8 MB atau gunakan link TikTok/IG agar hemat kuota Cached Egress 5 GB/bulan Supabase Free). Tetap lanjut unggah?')) {
-                    inputEl.value = '';
-                    return;
-                }
             }
             const startIdx = findItemByUid(arrName, itemUid);
             if (startIdx < 0) return;
