@@ -13,139 +13,255 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #ff1493;
-            --secondary: #2b4c7e;
-            --bg-body: #f8fafc;
-            --sidebar-bg: #18171d;
-            --border-color: #e2e8f0;
+            --primary: #111111;
+            --secondary: #111111;
+            --muted: #71717a;
+            --bg-body: #f7f7f8;
+            --surface: #ffffff;
+            --surface-subtle: #fafafa;
+            --sidebar-bg: #ffffff;
+            --border-color: #e5e7eb;
+            --border-strong: #d4d4d8;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { display: flex; min-height: 100vh; background: var(--bg-body); color: var(--secondary); overflow-x: hidden; }
+        body { display: flex; min-height: 100vh; background: var(--bg-body); color: #111111; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
 
+        /* Sidebar Minimalis Putih (2 Warna: Hitam & Putih) */
         .sidebar {
-            width: 224px; background: var(--sidebar-bg); color: #ffffff; display: flex; flex-direction: column;
-            position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease;
+            width: 236px; background: var(--sidebar-bg); color: #111111; display: flex; flex-direction: column;
+            position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 1000;
+            border-right: 1px solid var(--border-color); transition: transform 0.25s ease;
         }
-        .sidebar-header { padding: 12px 14px; background: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .sidebar-header img { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #fff; object-fit: contain; }
-        .sidebar-header h2 { font-size: 0.95rem; font-weight: 800; color: #fff; }
-        
-        .sidebar-menu { padding: 8px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+        .sidebar-header {
+            padding: 16px 18px; background: #ffffff; border-bottom: 1px solid #f0f0f2;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .sidebar-header img { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border-color); object-fit: contain; }
+        .sidebar-header h2 { font-size: 0.92rem; font-weight: 800; color: #111111; letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 6px; }
+        .sidebar-header h2 span { font-size: 0.72rem; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+
+        .sidebar-menu { padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
         .menu-btn {
-            background: transparent; border: none; color: #9ca3af; text-align: left; padding: 7px 10px;
-            border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;
+            background: transparent; border: none; color: #52525b; text-align: left; padding: 9px 12px;
+            border-radius: 8px; font-size: 0.82rem; font-weight: 500; cursor: pointer;
+            display: flex; align-items: center; gap: 10px; transition: background 0.15s, color 0.15s;
         }
-        .menu-btn:hover { background: rgba(255, 20, 147, 0.1); color: #fff; }
-        .menu-btn.active { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(255, 20, 147, 0.3); }
-        
-        .sidebar-footer { padding: 10px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 6px; }
+        .menu-btn svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; stroke: currentColor; }
+        .menu-btn:hover { background: #f4f4f5; color: #111111; }
+        .menu-btn:hover svg { opacity: 1; }
+        .menu-btn.active { background: #111111; color: #ffffff; font-weight: 600; }
+        .menu-btn.active svg { opacity: 1; }
+
+        .sidebar-footer { padding: 12px 10px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 6px; }
         .btn-view-site, .btn-logout {
-            display: block; text-align: center; padding: 7px; border-radius: 6px; font-size: 0.76rem; font-weight: 700; text-decoration: none; cursor: pointer; border: none;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 8px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 600;
+            text-decoration: none; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s;
         }
-        .btn-view-site { background: var(--secondary); color: #fff; }
-        .btn-logout { background: #ef4444; color: #fff; }
+        .btn-view-site { background: #ffffff; color: #111111; border: 1px solid var(--border-strong); }
+        .btn-view-site:hover { background: #f4f4f5; border-color: #111111; }
+        .btn-logout { background: #f4f4f5; color: #111111; border: 1px solid transparent; }
+        .btn-logout:hover { background: #111111; color: #ffffff; }
 
         .mobile-header-bar {
-            display: none; position: fixed; top: 0; left: 0; right: 0; height: 48px;
-            background: var(--sidebar-bg); z-index: 999; align-items: center; justify-content: space-between; padding: 0 14px; color: #fff; border-bottom: 2px solid var(--primary);
+            display: none; position: fixed; top: 0; left: 0; right: 0; height: 52px;
+            background: #ffffff; z-index: 999; align-items: center; justify-content: space-between;
+            padding: 0 16px; color: #111111; border-bottom: 1px solid var(--border-color);
         }
-        .mobile-toggle-btn { background: var(--primary); border: none; color: #fff; padding: 5px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
+        .mobile-header-bar h2 { font-size: 0.92rem; font-weight: 800; letter-spacing: -0.02em; }
+        .mobile-toggle-btn { background: #111111; border: none; color: #ffffff; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; cursor: pointer; }
 
-        .main-content { margin-left: 224px; flex: 1; padding: 14px 18px; max-width: calc(100% - 224px); }
+        /* Main Area */
+        .main-content { margin-left: 236px; flex: 1; padding: 18px 24px 28px; max-width: calc(100% - 236px); }
         .top-bar {
-            display: flex; justify-content: space-between; align-items: center; background: #ffffff;
-            padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #ffffff;
+            padding: 12px 18px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 16px;
         }
-        .top-bar h1 { font-size: 1.02rem; color: var(--secondary); font-weight: 700; }
+        .top-bar h1 { font-size: 1.05rem; color: #111111; font-weight: 700; letter-spacing: -0.01em; }
+        .top-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+        .sync-pill {
+            font-size: 0.74rem; font-weight: 600; padding: 5px 11px; border-radius: 999px;
+            background: #f4f4f5; color: #18181b; border: 1px solid #e4e4e7;
+        }
+        .btn-top-outline {
+            background: #ffffff; color: #111111; border: 1px solid var(--border-strong);
+            padding: 7px 13px; border-radius: 8px; font-weight: 600; font-size: 0.78rem;
+            cursor: pointer; transition: background 0.15s, border-color 0.15s;
+        }
+        .btn-top-outline:hover { background: #f4f4f5; border-color: #111111; }
         .btn-save-all {
-            background: var(--primary); color: #fff; border: none; padding: 7px 16px; border-radius: 50px;
-            font-weight: 700; font-size: 0.8rem; cursor: pointer; box-shadow: 0 4px 12px rgba(255, 20, 147, 0.25);
+            background: #111111; color: #ffffff; border: 1px solid #111111; padding: 7px 16px; border-radius: 8px;
+            font-weight: 600; font-size: 0.78rem; cursor: pointer; transition: background 0.15s;
+        }
+        .btn-save-all:hover { background: #27272a; }
+
+        /* Notice Banners (Monochrome) */
+        .notice-banner {
+            display: none; margin-bottom: 14px; padding: 11px 14px; border-radius: 10px;
+            background: #ffffff; border: 1px solid var(--border-strong); border-left: 3px solid #111111;
+            color: #18181b; font-size: 0.8rem; line-height: 1.5;
         }
 
+        /* Section Cards */
         .admin-section {
             display: none !important; background: #ffffff; border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            border-radius: 12px; padding: 20px 22px;
         }
         .admin-section.active { display: block !important; }
         .sec-header {
-            display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #f0f0f2; padding-bottom: 12px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
         }
-        .sec-header h2 { font-size: 1rem; color: var(--secondary); font-weight: 700; }
-        .badge-min { background: #fdf2f8; color: var(--primary); padding: 2px 8px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; border: 1px solid #fbcfe8; }
+        .sec-header h2 { font-size: 0.98rem; color: #111111; font-weight: 700; letter-spacing: -0.01em; }
+        .badge-min { display: none; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px 12px; margin-bottom: 8px; }
-        .form-group { margin-bottom: 8px; }
-        .form-group label { display: block; font-size: 0.74rem; font-weight: 700; color: var(--secondary); margin-bottom: 3px; }
-        .form-group input[type="text"], .form-group input[type="password"], .form-group select, .form-group textarea {
-            width: 100%; padding: 6px 9px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.82rem; outline: none; background: #fff;
+        /* Sub-panel box */
+        .sub-panel {
+            background: var(--surface-subtle); padding: 14px 16px; border-radius: 10px;
+            border: 1px solid var(--border-color); margin-bottom: 16px;
         }
-        .form-group textarea { resize: vertical; min-height: 44px; }
-        .admin-section input[type="file"] { width: 100%; font-size: 0.74rem; margin-top: 4px !important; }
+
+        /* Forms */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px 16px; margin-bottom: 12px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.76rem; font-weight: 600; color: #3f3f46; margin-bottom: 5px; }
+        .form-group input[type="text"], .form-group input[type="password"], .form-group select, .form-group textarea {
+            width: 100%; padding: 8px 11px; border: 1px solid var(--border-strong); border-radius: 8px;
+            font-size: 0.82rem; color: #111111; outline: none; background: #ffffff;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-group textarea { resize: vertical; min-height: 54px; line-height: 1.45; }
+        .admin-section input[type="file"] {
+            width: 100%; font-size: 0.75rem; color: #52525b; margin-top: 6px !important;
+        }
+        .admin-section input[type="file"]::file-selector-button {
+            background: #ffffff; color: #111111; border: 1px solid var(--border-strong);
+            padding: 5px 10px; border-radius: 6px; font-size: 0.74rem; font-weight: 600;
+            cursor: pointer; margin-right: 10px; transition: background 0.15s, border-color 0.15s;
+        }
+        .admin-section input[type="file"]::file-selector-button:hover { background: #f4f4f5; border-color: #111111; }
         .item-card .form-group:last-child { margin-bottom: 0; }
-        .item-card .form-group[style*="margin-top"] { margin-top: 4px !important; }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+        .item-card .form-group[style*="margin-top"] { margin-top: 10px !important; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: #111111; box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.08);
+        }
 
         .password-container { position: relative; display: flex; align-items: center; }
-        .password-container input { width: 100%; padding-right: 34px; }
+        .password-container input { width: 100%; padding-right: 36px; }
         .toggle-password {
-            position: absolute; right: 10px; background: none; border: none; cursor: pointer; font-size: 1rem; color: #64748b;
+            position: absolute; right: 10px; background: none; border: none; cursor: pointer; font-size: 0.9rem; color: #71717a;
         }
 
-        .input-with-clear { display: flex; gap: 5px; align-items: center; }
+        .input-with-clear { display: flex; gap: 6px; align-items: center; }
         .btn-clear-input {
-            background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; padding: 6px 9px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 0.72rem;
+            background: #ffffff; color: #52525b; border: 1px solid var(--border-strong);
+            padding: 0 10px; height: 34px; border-radius: 8px; font-weight: 700; cursor: pointer;
+            font-size: 0.88rem; line-height: 1; flex-shrink: 0; transition: background 0.15s, color 0.15s, border-color 0.15s;
         }
-        .btn-clear-input:hover { background: #dc2626; color: #fff; }
+        .btn-clear-input:hover { background: #111111; color: #ffffff; border-color: #111111; }
 
-        .dynamic-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 10px; margin-top: 8px; }
-        .item-card { background: #fdf2f8; border: 1px solid #fbcfe8; border-radius: 10px; padding: 10px; position: relative; }
-        .item-card h4 { margin-bottom: 6px; color: var(--primary); font-size: 0.82rem; display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
-        
+        /* Dynamic Item Cards (2-3 kolom lega, bukan 5 kolom sempit) */
+        .dynamic-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr)); gap: 16px; margin-top: 12px; }
+        .item-card {
+            background: var(--surface-subtle); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 16px; position: relative; transition: border-color 0.15s;
+        }
+        .item-card:hover { border-color: var(--border-strong); }
+        .item-card h4 {
+            margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #ececef;
+            color: #111111; font-size: 0.85rem; display: flex; justify-content: space-between;
+            align-items: center; font-weight: 700;
+        }
+
         .media-preview-box {
-            margin-top: 5px; border-radius: 8px; overflow: hidden; border: 2px solid #fbcfe8; background: #fff;
-            display: flex; align-items: center; gap: 8px; padding: 4px 8px; font-size: 0.72rem; color: #10b981; font-weight: 700;
+            margin-top: 8px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: #ffffff;
+            display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 0.74rem; color: #3f3f46; font-weight: 500;
         }
-        .media-preview-box img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; flex-shrink: 0; }
-        .media-preview-box video { width: 56px; height: 80px; object-fit: cover; border-radius: 6px; background: #000; flex-shrink: 0; }
+        .media-preview-box span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .media-preview-box img { width: 38px; height: 38px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-color); flex-shrink: 0; }
+        .media-preview-box video { width: 52px; height: 74px; object-fit: cover; border-radius: 6px; background: #111111; flex-shrink: 0; }
 
-        .btn-add { background: #10b981; color: #fff; border: none; padding: 5px 11px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.76rem; }
-        .btn-remove { background: #ef4444; color: #fff; border: none; padding: 3px 8px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.7rem; }
-        .order-nav-btn { background: var(--secondary); color: #fff; border: none; padding: 3px 8px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 0.7rem; margin-right: 4px; }
+        /* Buttons (Strict 2-Color Monochrome) */
+        .btn-add {
+            background: #111111; color: #ffffff; border: 1px solid #111111; padding: 7px 14px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.78rem; transition: background 0.15s;
+        }
+        .btn-add:hover { background: #27272a; }
+        .btn-remove {
+            background: #ffffff; color: #52525b; border: 1px solid var(--border-strong); padding: 4px 10px;
+            border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.72rem; transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .btn-remove:hover { background: #111111; color: #ffffff; border-color: #111111; }
+        .order-nav-btn {
+            background: #ffffff; color: #111111; border: 1px solid var(--border-strong); padding: 3px 8px;
+            border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.72rem; margin-right: 4px;
+        }
+        .order-nav-btn:hover { background: #111111; color: #ffffff; border-color: #111111; }
 
-        .color-picker-box { display: flex; align-items: center; gap: 8px; background: #fdf2f8; padding: 8px 10px; border-radius: 8px; border: 1px solid #fbcfe8; }
-        .color-wheel { width: 32px; height: 32px; border: none; border-radius: 50%; cursor: pointer; background: transparent; }
+        /* Color Picker Boxes (Frontend Theme Section) */
+        .color-picker-box {
+            display: flex; align-items: center; gap: 12px; background: var(--surface-subtle);
+            padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border-color);
+        }
+        .color-wheel { width: 34px; height: 34px; border: 1px solid var(--border-strong); border-radius: 8px; cursor: pointer; background: transparent; padding: 2px; }
+        .color-picker-box label { display: block; font-size: 0.74rem; font-weight: 600; color: #3f3f46; margin-bottom: 4px; }
+        .color-picker-box input[type="text"] {
+            width: 100%; padding: 6px 9px; border: 1px solid var(--border-strong); border-radius: 6px;
+            font-size: 0.8rem; color: #111111; background: #ffffff; outline: none;
+        }
+        .color-picker-box input[type="text"]:focus { border-color: #111111; }
 
-        .table-responsive { overflow-x: auto; background: #fff; border-radius: 10px; border: 1px solid var(--border-color); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.76rem; white-space: nowrap; }
-        th, td { padding: 6px 8px; border-bottom: 1px solid var(--border-color); text-align: left; vertical-align: middle; }
-        th { background: var(--secondary); color: #fff; font-weight: 600; }
-        tr.row-belum td { background-color: #fef2f2; }
-        tr.row-sudah td { background-color: #f0fdf4; }
+        /* Tables (Minimalist Light Header) */
+        .table-responsive { overflow-x: auto; background: #ffffff; border-radius: 10px; border: 1px solid var(--border-color); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.78rem; white-space: nowrap; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid #f0f0f2; text-align: left; vertical-align: middle; }
+        th {
+            background: #fafafa; color: #52525b; font-weight: 600; font-size: 0.71rem;
+            text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border-color);
+        }
+        tr:last-child td { border-bottom: none; }
+        tr.row-belum td { background-color: #ffffff; color: #111111; }
+        tr.row-sudah td { background-color: #fafafa; color: #71717a; }
 
-        .btn-toggle-status { border: none; padding: 4px 9px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer; color: #fff; }
-        .btn-status-belum { background: #ef4444; }
-        .btn-status-sudah { background: #10b981; }
-        
-        .link-drive { color: var(--primary); font-weight: 700; text-decoration: none; }
-        .link-drive:hover { text-decoration: underline; }
-        
-        .action-btns-group { display: flex; gap: 4px; }
-        .btn-action-wa { background: #25d366; color: #fff; text-decoration: none; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-align: center; display: inline-block; }
-        .btn-action-email { background: #3b82f6; color: #fff; text-decoration: none; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-align: center; display: inline-block; }
+        .btn-toggle-status { padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; transition: 0.15s; }
+        .btn-status-belum { background: #111111; color: #ffffff; border: 1px solid #111111; }
+        .btn-status-belum:hover { background: #27272a; }
+        .btn-status-sudah { background: #ffffff; color: #52525b; border: 1px solid var(--border-strong); }
+        .btn-status-sudah:hover { border-color: #111111; color: #111111; }
+
+        .link-drive { color: #111111; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+        .link-drive:hover { opacity: 0.7; }
+
+        .action-btns-group { display: flex; gap: 6px; }
+        .btn-action-wa, .btn-action-email {
+            background: #ffffff; color: #111111; border: 1px solid var(--border-strong); text-decoration: none;
+            padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; text-align: center;
+            display: inline-block; transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+        .btn-action-wa:hover, .btn-action-email:hover { background: #111111; color: #ffffff; border-color: #111111; }
+
+        .pending-pill {
+            display: none; margin-top: 6px; font-size: 0.74rem; font-weight: 600;
+            color: #111111; background: #f4f4f5; border: 1px solid var(--border-strong);
+            padding: 4px 10px; border-radius: 6px; width: fit-content;
+        }
 
         .toast-notif {
-            position: fixed; bottom: 25px; right: 25px; background: #10b981; color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; box-shadow: 0 8px 25px rgba(0,0,0,0.15); display: none; z-index: 9999;
+            position: fixed; bottom: 24px; right: 24px; background: #111111; color: #ffffff;
+            padding: 11px 18px; border-radius: 10px; font-weight: 600; font-size: 0.84rem;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16); display: none; z-index: 9999;
         }
 
         @media screen and (max-width: 768px) {
             .mobile-header-bar { display: flex; }
-            .sidebar { transform: translateX(-100%); width: 230px; padding-top: 48px; }
-            .sidebar.active { transform: translateX(0); }
-            .main-content { margin-left: 0; max-width: 100%; padding: 60px 10px 16px 10px; }
-            .top-bar { flex-direction: column; gap: 8px; align-items: stretch; text-align: center; }
+            .sidebar { transform: translateX(-100%); width: 244px; padding-top: 52px; }
+            .sidebar.active { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.08); }
+            .main-content { margin-left: 0; max-width: 100%; padding: 66px 12px 20px; }
+            .top-bar { flex-direction: column; gap: 10px; align-items: stretch; }
+            .top-actions { justify-content: flex-start; }
+            .admin-section { padding: 14px; }
         }
-        :focus-visible { outline: 3px solid var(--primary, #ff1493); outline-offset: 2px; }
+        :focus-visible { outline: 2px solid #111111; outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
         }
@@ -184,92 +300,97 @@
 <body>
 
     <div class="mobile-header-bar">
-        <h2>OH SNAP! ADMIN</h2>
-        <button class="mobile-toggle-btn" onclick="toggleMobileSidebar()">☰ Menu</button>
+        <h2>OH SNAP!</h2>
+        <button class="mobile-toggle-btn" onclick="toggleMobileSidebar()">Menu</button>
     </div>
 
     <aside class="sidebar" id="sidebarEl">
         <div class="sidebar-header">
             <img src="images/logo-icon.jpg" alt="Logo" onerror="this.style.display='none'">
-            <h2>OH SNAP! ADMIN</h2>
+            <h2>OH SNAP! <span>Admin</span></h2>
         </div>
         <div class="sidebar-menu">
-            <button class="menu-btn active" onclick="switchTab('sec-banner', this, event)">🖼️ 1. Banner & Hero Title</button>
-            <button class="menu-btn" onclick="switchTab('sec-video', this, event)">🎬 2. Video Feed (Min: 5)</button>
-            <button class="menu-btn" onclick="switchTab('sec-studio', this, event)">📸 3. Suasana Studio (Min: 4)</button>
-            <button class="menu-btn" onclick="switchTab('sec-promo', this, event)">🏷️ 4. Kelola Promo (Min: 3)</button>
-            <button class="menu-btn" onclick="switchTab('sec-frame', this, event)">🎞️ 5. Frame Layout (Min: 5)</button>
-            <button class="menu-btn" onclick="switchTab('sec-layanan', this, event)">✨ 6. Layanan (Min: 3)</button>
-            <button class="menu-btn" onclick="switchTab('sec-lokasi', this, event)">📍 7. Lokasi Cabang (Min: 5)</button>
-            <button class="menu-btn" onclick="switchTab('sec-footer', this, event)">🦶 8. Pengaturan Footer</button>
-            <button class="menu-btn" onclick="switchTab('sec-colors', this, event)">🎨 9. Warna Frontend</button>
-            <button class="menu-btn" onclick="switchTab('sec-resend', this, event)">📩 10. Resend Softcopy</button>
-            <button class="menu-btn" onclick="switchTab('sec-admins', this, event)">👤 11. Kelola Admin</button>
+            <button class="menu-btn active" onclick="switchTab('sec-banner', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5L5 20"/></svg>Banner &amp; Hero</button>
+            <button class="menu-btn" onclick="switchTab('sec-video', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M22 7l-5 3.5V13.5L22 17V7z"/></svg>Video Feed</button>
+            <button class="menu-btn" onclick="switchTab('sec-studio', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Suasana Studio</button>
+            <button class="menu-btn" onclick="switchTab('sec-promo', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg>Promo</button>
+            <button class="menu-btn" onclick="switchTab('sec-frame', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Frame Layout</button>
+            <button class="menu-btn" onclick="switchTab('sec-layanan', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg>Layanan</button>
+            <button class="menu-btn" onclick="switchTab('sec-lokasi', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Lokasi Cabang</button>
+            <button class="menu-btn" onclick="switchTab('sec-footer', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="15" x2="21" y2="15"/></svg>Footer</button>
+            <button class="menu-btn" onclick="switchTab('sec-colors', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><circle cx="12" cy="15" r="1"/></svg>Warna Frontend</button>
+            <button class="menu-btn" onclick="switchTab('sec-resend', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Resend Softcopy</button>
+            <button class="menu-btn" onclick="switchTab('sec-admins', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Kelola Admin</button>
         </div>
         <div class="sidebar-footer">
-            <a href="https://ohsnap.web.id" id="viewFrontendLink" target="_blank" class="btn-view-site">🌐 Lihat Website Frontend</a>
-            <button class="btn-logout" onclick="logoutAdmin()">🚪 Keluar (Logout)</button>
+            <a href="https://ohsnap.web.id" id="viewFrontendLink" target="_blank" class="btn-view-site">Lihat Website</a>
+            <button class="btn-logout" onclick="logoutAdmin()">Keluar</button>
         </div>
     </aside>
 
     <main class="main-content">
         <div class="top-bar">
-            <h1 id="pageTitle">Pengaturan Banner & Hero Title</h1>
-            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;"><span id="syncStatusBadge" role="status" aria-live="polite" style="font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:50px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0;">☁️ Memuat Cloud...</span><button type="button" id="btnCleanOrphans" style="display:none; background:#f59e0b; color:#fff; border:none; padding:6px 10px; border-radius:50px; font-weight:700; font-size:0.74rem; cursor:pointer;" onclick="cleanOrphanStorageFiles()">🧹 Bersihkan File Yatim</button><button type="button" style="background:#475569; color:#fff; border:none; padding:6px 12px; border-radius:50px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="openCmsHistoryModal()">🕒 Riwayat</button><button type="button" style="background:#2b4c7e; color:#fff; border:none; padding:6px 12px; border-radius:50px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="downloadCMSBackup()">📥 Backup JSON</button><button class="btn-save-all" onclick="saveAllCMS(false, true)">💾 Simpan Semua Perubahan</button></div>
+            <h1 id="pageTitle">Banner &amp; Hero</h1>
+            <div class="top-actions">
+                <span id="syncStatusBadge" role="status" aria-live="polite" class="sync-pill">Memuat Cloud...</span>
+                <button type="button" id="btnCleanOrphans" class="btn-top-outline" style="display:none;" onclick="cleanOrphanStorageFiles()">Bersihkan File</button>
+                <button type="button" class="btn-top-outline" onclick="openCmsHistoryModal()">Riwayat</button>
+                <button type="button" class="btn-top-outline" onclick="downloadCMSBackup()">Backup JSON</button>
+                <button class="btn-save-all" onclick="saveAllCMS(false, true)">Simpan Perubahan</button>
+            </div>
         </div>
-        <div id="sessionDraftBanner" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:10px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; font-size:0.8rem; line-height:1.45;"></div>
-        <div id="defaultPwBanner" style="display:none; margin-bottom:12px; padding:10px 14px; border-radius:10px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; font-size:0.8rem; line-height:1.45;"></div>
+        <div id="sessionDraftBanner" class="notice-banner"></div>
+        <div id="defaultPwBanner" class="notice-banner"></div>
 
         <!-- 1. BANNER & HERO TITLE -->
         <section id="sec-banner" class="admin-section active">
             <div class="sec-header">
-                <h2>Pengaturan Banner & Halaman Utama</h2>
-                <span class="badge-min">Dropdown Halaman</span>
+                <h2>Banner &amp; Hero</h2>
             </div>
-            <div class="form-group" style="max-width: 320px;">
-                <label>Pilih Bagian yang Ingin Diubah:</label>
+            <div class="form-group" style="max-width: 300px;">
+                <label>Halaman</label>
                 <select id="bannerPageSelect" onchange="onBannerPageChange()">
-                    <option value="home">Halaman Home (Beranda)</option>
-                    <option value="about">Halaman About Our Story (Home)</option>
-                    <option value="layanan">Halaman Layanan</option>
-                    <option value="frame">Halaman Frame</option>
-                    <option value="lokasi">Halaman Lokasi</option>
+                    <option value="home">Home</option>
+                    <option value="about">About Our Story</option>
+                    <option value="layanan">Layanan</option>
+                    <option value="frame">Frame</option>
+                    <option value="lokasi">Lokasi</option>
                 </select>
             </div>
             <div class="form-grid">
                 <div class="form-group"><label>Judul Utama (ID)</label><input type="text" id="bannerTitleId" oninput="updateBannerState()"></div>
                 <div class="form-group"><label>Judul Utama (EN)</label><input type="text" id="bannerTitleEn" oninput="updateBannerState()"></div>
-                <div class="form-group"><label>Deskripsi / Sub-Headline (ID)</label><textarea id="bannerSubId" oninput="updateBannerState()"></textarea></div>
-                <div class="form-group"><label>Deskripsi / Sub-Headline (EN)</label><textarea id="bannerSubEn" oninput="updateBannerState()"></textarea></div>
+                <div class="form-group"><label>Deskripsi (ID)</label><textarea id="bannerSubId" oninput="updateBannerState()"></textarea></div>
+                <div class="form-group"><label>Deskripsi (EN)</label><textarea id="bannerSubEn" oninput="updateBannerState()"></textarea></div>
             </div>
 
             <div id="aboutSpecificFields" style="display: none;">
                 <div class="form-grid">
-                    <div class="form-group"><label>Teks Tombol Read More (ID)</label><input type="text" id="bannerBtnId" placeholder="Read more →" oninput="updateBannerState()"></div>
-                    <div class="form-group"><label>Teks Tombol Read More (EN)</label><input type="text" id="bannerBtnEn" placeholder="Read more →" oninput="updateBannerState()"></div>
+                    <div class="form-group"><label>Teks Tombol (ID)</label><input type="text" id="bannerBtnId" placeholder="Read more →" oninput="updateBannerState()"></div>
+                    <div class="form-group"><label>Teks Tombol (EN)</label><input type="text" id="bannerBtnEn" placeholder="Read more →" oninput="updateBannerState()"></div>
                 </div>
                 <div class="form-grid">
-                    <div class="form-group"><label>Isi Cerita Lengkap / Full Story (ID)</label><textarea id="bannerFullId" placeholder="Tuliskan cerita lengkap..." oninput="updateBannerState()" style="min-height: 84px;"></textarea></div>
-                    <div class="form-group"><label>Isi Cerita Lengkap / Full Story (EN)</label><textarea id="bannerFullEn" placeholder="Tuliskan cerita lengkap..." oninput="updateBannerState()" style="min-height: 84px;"></textarea></div>
+                    <div class="form-group"><label>Cerita Lengkap (ID)</label><textarea id="bannerFullId" oninput="updateBannerState()" style="min-height: 90px;"></textarea></div>
+                    <div class="form-group"><label>Cerita Lengkap (EN)</label><textarea id="bannerFullEn" oninput="updateBannerState()" style="min-height: 90px;"></textarea></div>
                 </div>
             </div>
 
             <div class="form-grid" style="margin-top: 6px;">
-                <div class="form-group" style="background:#fdf2f8; padding:10px; border-radius:10px; border:1px solid #fbcfe8;">
-                    <label id="bannerUploadLabel">🖼️ Upload Gambar Banner Halaman Ini (Atau Isi URL):</label>
+                <div class="form-group sub-panel" style="margin-bottom:0;">
+                    <label id="bannerUploadLabel">Gambar Banner</label>
                     <div class="input-with-clear">
-                        <input type="text" id="bannerImgUrl" placeholder="Klik Choose File di bawah atau tempel link URL..." oninput="updateBannerImgManual(this.value)">
-                        <button type="button" class="btn-clear-input" onclick="clearBannerImg()">❌ X</button>
+                        <input type="text" id="bannerImgUrl" placeholder="URL gambar atau pilih file" oninput="updateBannerImgManual(this.value)">
+                        <button type="button" class="btn-clear-input" onclick="clearBannerImg()">&times;</button>
                     </div>
                     <input type="file" id="bannerFileInput" accept="image/*" style="margin-top:8px;" onchange="handleFileUpload(this)">
                     <div id="bannerPreviewWrap"></div>
                 </div>
 
-                <div class="form-group" id="quickAboutPhotoBox" style="background:#fdf2f8; padding:10px; border-radius:10px; border:1px solid #fbcfe8;">
-                    <label>📸 Upload Foto "About Our Story" (Tampil di Beranda):</label>
+                <div class="form-group sub-panel" id="quickAboutPhotoBox" style="margin-bottom:0;">
+                    <label>Foto About Our Story</label>
                     <div class="input-with-clear">
-                        <input type="text" id="aboutQuickImgUrl" placeholder="Klik Choose File di bawah atau tempel link URL..." oninput="updateAboutImgManual(this.value)">
-                        <button type="button" class="btn-clear-input" onclick="clearAboutImg()">❌ X</button>
+                        <input type="text" id="aboutQuickImgUrl" placeholder="URL gambar atau pilih file" oninput="updateAboutImgManual(this.value)">
+                        <button type="button" class="btn-clear-input" onclick="clearAboutImg()">&times;</button>
                     </div>
                     <input type="file" id="aboutQuickFileInput" accept="image/*" style="margin-top:8px;" onchange="handleAboutPhotoUpload(this)">
                     <div id="aboutPreviewWrap"></div>
@@ -280,17 +401,17 @@
         <!-- 2. VIDEO FEED -->
         <section id="sec-video" class="admin-section">
             <div class="sec-header">
-                <div><h2>Kelola Halaman Video Feed</h2><span class="badge-min">Batas Minimal: 5 Kolom</span></div>
+                <h2>Video Feed</h2>
                 <button class="btn-add" onclick="addVideoItem()">+ Tambah Video</button>
             </div>
-            <div class="form-grid" style="background:#fdf2f8; padding:10px; border-radius:8px; border:1px solid #fbcfe8; margin-bottom:10px;">
+            <div class="form-grid sub-panel">
                 <div>
-                    <div class="form-group"><label>Judul Seksi Video (ID)</label><input type="text" id="titleVideoId" oninput="updateTitlesState()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label>Judul Seksi Video (EN)</label><input type="text" id="titleVideoEn" oninput="updateTitlesState()"></div>
+                    <div class="form-group"><label>Judul Seksi (ID)</label><input type="text" id="titleVideoId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Judul Seksi (EN)</label><input type="text" id="titleVideoEn" oninput="updateTitlesState()"></div>
                 </div>
                 <div>
-                    <div class="form-group"><label>Subjudul Seksi Video (ID)</label><input type="text" id="subVideoId" oninput="updateTitlesState()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label>Subjudul Seksi Video (EN)</label><input type="text" id="subVideoEn" oninput="updateTitlesState()"></div>
+                    <div class="form-group"><label>Subjudul (ID)</label><input type="text" id="subVideoId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Subjudul (EN)</label><input type="text" id="subVideoEn" oninput="updateTitlesState()"></div>
                 </div>
             </div>
             <div id="videoListContainer" class="dynamic-list"></div>
@@ -299,17 +420,17 @@
         <!-- 3. SUASANA STUDIO -->
         <section id="sec-studio" class="admin-section">
             <div class="sec-header">
-                <div><h2>Kelola Suasana Studio</h2><span class="badge-min">Batas Minimal: 4 Kolom</span></div>
+                <h2>Suasana Studio</h2>
                 <button class="btn-add" onclick="addStudioItem()">+ Tambah Studio</button>
             </div>
-            <div class="form-grid" style="background:#fdf2f8; padding:10px; border-radius:8px; border:1px solid #fbcfe8; margin-bottom:10px;">
+            <div class="form-grid sub-panel">
                 <div>
-                    <div class="form-group"><label>Judul Seksi Studio (ID)</label><input type="text" id="titleStudioId" oninput="updateTitlesState()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label>Judul Seksi Studio (EN)</label><input type="text" id="titleStudioEn" oninput="updateTitlesState()"></div>
+                    <div class="form-group"><label>Judul Seksi (ID)</label><input type="text" id="titleStudioId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Judul Seksi (EN)</label><input type="text" id="titleStudioEn" oninput="updateTitlesState()"></div>
                 </div>
                 <div>
-                    <div class="form-group"><label>Subjudul Seksi Studio (ID)</label><input type="text" id="subStudioId" oninput="updateTitlesState()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label>Subjudul Seksi Studio (EN)</label><input type="text" id="subStudioEn" oninput="updateTitlesState()"></div>
+                    <div class="form-group"><label>Subjudul (ID)</label><input type="text" id="subStudioId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Subjudul (EN)</label><input type="text" id="subStudioEn" oninput="updateTitlesState()"></div>
                 </div>
             </div>
             <div id="studioListContainer" class="dynamic-list"></div>
@@ -318,17 +439,17 @@
         <!-- 4. KELOLA PROMO -->
         <section id="sec-promo" class="admin-section">
             <div class="sec-header">
-                <div><h2>Kelola Promo</h2><span class="badge-min">Batas Minimal: 3 Kolom</span></div>
+                <h2>Promo</h2>
                 <button class="btn-add" onclick="addPromoItem()">+ Tambah Promo</button>
             </div>
-            <div class="form-grid" style="background:#fdf2f8; padding:10px; border-radius:8px; border:1px solid #fbcfe8; margin-bottom:10px;">
+            <div class="form-grid sub-panel">
                 <div>
-                    <div class="form-group"><label>Judul Seksi Promo (ID)</label><input type="text" id="titlePromoId" oninput="updateTitlesState()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label>Judul Seksi Promo (EN)</label><input type="text" id="titlePromoEn" oninput="updateTitlesState()"></div>
+                    <div class="form-group"><label>Judul Seksi (ID)</label><input type="text" id="titlePromoId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Judul Seksi (EN)</label><input type="text" id="titlePromoEn" oninput="updateTitlesState()"></div>
                 </div>
                 <div>
-                    <div class="form-group"><label>Subjudul Seksi Promo (ID)</label><input type="text" id="subPromoId" oninput="updateTitlesState()"></div>
-                    <div class="form-group" style="margin-bottom:0;"><label>Subjudul Seksi Promo (EN)</label><input type="text" id="subPromoEn" oninput="updateTitlesState()"></div>
+                    <div class="form-group"><label>Subjudul (ID)</label><input type="text" id="subPromoId" oninput="updateTitlesState()"></div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Subjudul (EN)</label><input type="text" id="subPromoEn" oninput="updateTitlesState()"></div>
                 </div>
             </div>
             <div id="promoListContainer" class="dynamic-list"></div>
@@ -337,7 +458,7 @@
         <!-- 5. FRAME LAYOUT -->
         <section id="sec-frame" class="admin-section">
             <div class="sec-header">
-                <div><h2>Kelola Frame Layout</h2><span class="badge-min">Batas Minimal: 5 Kolom</span></div>
+                <h2>Frame Layout</h2>
                 <button class="btn-add" onclick="addFrameItem()">+ Tambah Frame</button>
             </div>
             <div id="frameListContainer" class="dynamic-list"></div>
@@ -346,7 +467,7 @@
         <!-- 6. LAYANAN -->
         <section id="sec-layanan" class="admin-section">
             <div class="sec-header">
-                <div><h2>Kelola Layanan</h2><span class="badge-min">Batas Minimal: 3 Kolom</span></div>
+                <h2>Layanan</h2>
                 <button class="btn-add" onclick="addServiceItem()">+ Tambah Layanan</button>
             </div>
             <div id="serviceListContainer" class="dynamic-list"></div>
@@ -355,7 +476,7 @@
         <!-- 7. LOKASI CABANG -->
         <section id="sec-lokasi" class="admin-section">
             <div class="sec-header">
-                <div><h2>Kelola Lokasi Cabang</h2><span class="badge-min">Batas Minimal: 5 Kolom</span></div>
+                <h2>Lokasi Cabang</h2>
                 <button class="btn-add" onclick="addLocationItem()">+ Tambah Lokasi</button>
             </div>
             <div id="locationListContainer" class="dynamic-list"></div>
@@ -363,14 +484,14 @@
 
         <!-- 8. FOOTER -->
         <section id="sec-footer" class="admin-section">
-            <div class="sec-header"><h2>Kelola Informasi Footer (ID & EN)</h2></div>
+            <div class="sec-header"><h2>Footer</h2></div>
             <div class="form-grid">
-                <div class="form-group"><label>Nama Grup Perusahaan</label><input type="text" id="footerBrand" oninput="updateFooterState()"></div>
-                <div class="form-group"><label>Alamat Pusat / Center (Tampil di Footer)</label><textarea id="footerBranches" oninput="updateFooterState()"></textarea></div>
-                <div class="form-group"><label>IG Name</label><input type="text" id="footerIgName" oninput="updateFooterState()"></div>
-                <div class="form-group"><label>IG URL</label><input type="text" id="footerIgUrl" oninput="updateFooterState()"></div>
-                <div class="form-group"><label>TikTok Name</label><input type="text" id="footerTtName" oninput="updateFooterState()"></div>
-                <div class="form-group"><label>TikTok URL</label><input type="text" id="footerTtUrl" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>Nama Brand</label><input type="text" id="footerBrand" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>Alamat Pusat</label><textarea id="footerBranches" oninput="updateFooterState()"></textarea></div>
+                <div class="form-group"><label>Instagram</label><input type="text" id="footerIgName" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>URL Instagram</label><input type="text" id="footerIgUrl" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>TikTok</label><input type="text" id="footerTtName" oninput="updateFooterState()"></div>
+                <div class="form-group"><label>URL TikTok</label><input type="text" id="footerTtUrl" oninput="updateFooterState()"></div>
                 <div class="form-group"><label>Judul Kartu Lokasi (ID)</label><input type="text" id="footerCardTitleId" oninput="updateFooterState()"></div>
                 <div class="form-group"><label>Judul Kartu Lokasi (EN)</label><input type="text" id="footerCardTitleEn" oninput="updateFooterState()"></div>
                 <div class="form-group"><label>Deskripsi Kartu Lokasi (ID)</label><textarea id="footerCardDescId" oninput="updateFooterState()"></textarea></div>
@@ -381,7 +502,7 @@
 
         <!-- 9. WARNA FRONTEND -->
         <section id="sec-colors" class="admin-section">
-            <div class="sec-header"><h2>Cakram Warna Frontend</h2><button class="btn-remove" style="background:var(--secondary);" onclick="resetDefaultColors()">🔄 Reset Default</button></div>
+            <div class="sec-header"><h2>Warna Frontend</h2><button class="btn-remove" onclick="resetDefaultColors()">Reset Default</button></div>
             <div class="form-grid">
                 <div class="color-picker-box"><input type="color" id="pickerPrimary" class="color-wheel" oninput="syncColor('Primary', this.value)"><div style="flex:1;"><label>Warna Utama</label><input type="text" id="hexPrimary" oninput="syncColor('Primary', this.value)"></div></div>
                 <div class="color-picker-box"><input type="color" id="pickerSecondary" class="color-wheel" oninput="syncColor('Secondary', this.value)"><div style="flex:1;"><label>Warna Teks</label><input type="text" id="hexSecondary" oninput="syncColor('Secondary', this.value)"></div></div>
@@ -394,12 +515,12 @@
         <section id="sec-resend" class="admin-section">
             <div class="sec-header">
                 <div>
-                    <h2>Permintaan Resend Softcopy (Spreadsheet)</h2>
-                    <p id="resendPendingNote" style="display:none; margin-top:4px; font-size:0.76rem; font-weight:700; color:#dc2626; background:#fef2f2; border:1px solid #fecaca; padding:3px 10px; border-radius:8px; width:fit-content;"></p>
+                    <h2>Resend Softcopy</h2>
+                    <p id="resendPendingNote" class="pending-pill"></p>
                 </div>
-                <button class="btn-add" id="btnRefreshResend" onclick="loadResendData()">🔄 Refresh Data Spreadsheet</button>
+                <button class="btn-add" id="btnRefreshResend" onclick="loadResendData()">Refresh</button>
             </div>
-            <div id="resendErrorBox" style="display:none; margin:0 0 8px; padding:8px 12px; border-radius:8px; background:#fff7ed; border:1px solid #fdba74; color:#9a3412; font-size:0.78rem; line-height:1.45;"></div>
+            <div id="resendErrorBox" class="notice-banner" style="margin:0 0 12px;"></div>
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -413,8 +534,8 @@
                             <th>No HP</th>
                             <th>Email</th>
                             <th>Cabang</th>
-                            <th>Upload Foto</th>
-                            <th>Aksi Kirim</th>
+                            <th>Foto</th>
+                            <th>Kirim</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -422,58 +543,58 @@
                     <tbody id="resendTableBody"></tbody>
                 </table>
             </div>
-            <div id="resendPaginationBar" style="display:none; margin-top:10px; text-align:center;">
-                <button type="button" id="btnLoadMoreResend" class="btn-add" style="background:var(--secondary);" onclick="loadMoreResendData()">⬇️ Muat Data Lebih Banyak</button>
+            <div id="resendPaginationBar" style="display:none; margin-top:14px; text-align:center;">
+                <button type="button" id="btnLoadMoreResend" class="btn-top-outline" onclick="loadMoreResendData()">Muat Lebih Banyak</button>
             </div>
         </section>
 
         <!-- 11. ADMIN -->
         <section id="sec-admins" class="admin-section">
             <div class="sec-header">
-                <h2>Kelola Admin (Akun Tidak Terbatas)</h2>
-                <button type="button" id="btnDebugLoginIp" class="btn-add" style="display:none; background:var(--secondary);" onclick="runLoginIpDiagnostic()">🔍 Cek IP Login (Owner)</button>
+                <h2>Kelola Admin</h2>
+                <button type="button" id="btnDebugLoginIp" class="btn-top-outline" style="display:none;" onclick="runLoginIpDiagnostic()">Cek IP Login</button>
             </div>
-            <div id="ipDiagResult" style="display:none; margin-bottom:10px; padding:10px 12px; border-radius:8px; background:#f0f9ff; border:1px solid #bae6fd; color:#0c4a6e; font-size:0.78rem; line-height:1.5; font-family:monospace; white-space:pre-wrap;"></div>
-            <div id="nonOwnerAdminNote" style="display:none; margin-bottom:10px; padding:8px 12px; border-radius:8px; background:#f8fafc; border:1px solid #cbd5e1; color:#475569; font-size:0.78rem;">ℹ️ Penambahan &amp; penghapusan akun admin hanya dapat dilakukan oleh <b>Owner</b>. Anda tetap dapat mengganti password akun Anda di bawah ini.</div>
-            <div id="addAdminFormBox" class="form-grid" style="background:#fdf2f8; padding:10px; border-radius:8px; border:1px solid #fbcfe8; margin-bottom:10px;">
-                <div class="form-group"><label>Nama</label><input type="text" id="newAdminName" placeholder="Nama Admin" autocomplete="off"></div>
-                <div class="form-group"><label>Username</label><input type="text" id="newAdminUser" placeholder="username_unik" autocomplete="off"></div>
-                <div class="form-group">
+            <div id="ipDiagResult" class="notice-banner" style="font-family:monospace; white-space:pre-wrap;"></div>
+            <div id="nonOwnerAdminNote" class="notice-banner">Penambahan dan penghapusan akun hanya dapat dilakukan oleh <b>Owner</b>.</div>
+            <div id="addAdminFormBox" class="form-grid sub-panel">
+                <div class="form-group" style="margin-bottom:0;"><label>Nama</label><input type="text" id="newAdminName" placeholder="Nama admin" autocomplete="off"></div>
+                <div class="form-group" style="margin-bottom:0;"><label>Username</label><input type="text" id="newAdminUser" placeholder="username" autocomplete="off"></div>
+                <div class="form-group" style="margin-bottom:0;">
                     <label>Password</label>
                     <div class="password-container">
-                        <input type="password" id="newAdminPass" placeholder="minimal 8 karakter" autocomplete="new-password">
+                        <input type="password" id="newAdminPass" placeholder="Min. 8 karakter" autocomplete="new-password">
                         <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newAdminPass', this)">👁️</button>
                     </div>
                 </div>
-                <div class="form-group" style="display:flex; align-items:flex-end;"><button class="btn-add" style="width:100%;" onclick="addNewAdmin()">+ Tambah Akun</button></div>
+                <div class="form-group" style="display:flex; align-items:flex-end; margin-bottom:0;"><button class="btn-add" style="width:100%;" onclick="addNewAdmin()">+ Tambah Akun</button></div>
             </div>
-            <div class="form-grid" style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:10px;">
-                <div class="form-group">
-                    <label>🔑 Password Lama (Akun Anda)</label>
+            <div class="form-grid sub-panel">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Password Lama</label>
                     <div class="password-container">
                         <input type="password" id="oldMyPass" placeholder="Password saat ini" autocomplete="current-password">
                         <button type="button" class="toggle-password" onclick="togglePasswordVisibility('oldMyPass', this)">👁️</button>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>🔒 Password Baru (Min. 8 Karakter)</label>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Password Baru</label>
                     <div class="password-container">
-                        <input type="password" id="newMyPass" placeholder="Password baru" autocomplete="new-password">
+                        <input type="password" id="newMyPass" placeholder="Min. 8 karakter" autocomplete="new-password">
                         <button type="button" class="toggle-password" onclick="togglePasswordVisibility('newMyPass', this)">👁️</button>
                     </div>
                 </div>
-                <div class="form-group" style="display:flex; align-items:flex-end;">
-                    <button type="button" class="btn-add" style="width:100%; background:var(--secondary);" onclick="changeMyPassword()">🔄 Ganti Password Saya</button>
+                <div class="form-group" style="display:flex; align-items:flex-end; margin-bottom:0;">
+                    <button type="button" class="btn-top-outline" style="width:100%; padding:8px 14px;" onclick="changeMyPassword()">Ganti Password</button>
                 </div>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>No</th>
                             <th>Nama</th>
                             <th>Username</th>
-                            <th>Role & Password</th>
+                            <th>Role</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -483,32 +604,31 @@
         </section>
     </main>
 
-    <div id="cmsHistoryModal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle" onclick="if(event.target===this)closeCmsHistoryModal()" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.55); z-index:10000; align-items:center; justify-content:center; padding:16px;">
-        <div style="background:#fff; width:100%; max-width:560px; max-height:82vh; overflow-y:auto; border-radius:14px; padding:18px; box-shadow:0 20px 50px rgba(0,0,0,0.25); border:1px solid var(--border-color);">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:12px;">
-                <h3 id="historyModalTitle" style="font-size:1rem; color:var(--secondary); font-weight:800;">🕒 Riwayat Versi Cloud (Hingga 50 Snapshot)</h3>
-                <button type="button" onclick="closeCmsHistoryModal()" style="background:#f1f5f9; border:none; padding:4px 10px; border-radius:6px; font-weight:700; cursor:pointer; color:#334155;">✕ Tutup</button>
+    <div id="cmsHistoryModal" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle" onclick="if(event.target===this)closeCmsHistoryModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:10000; align-items:center; justify-content:center; padding:16px;">
+        <div style="background:#ffffff; width:100%; max-width:540px; max-height:82vh; overflow-y:auto; border-radius:12px; padding:20px; box-shadow:0 20px 50px rgba(0,0,0,0.18); border:1px solid var(--border-color);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f0f0f2; padding-bottom:12px; margin-bottom:14px;">
+                <h3 id="historyModalTitle" style="font-size:0.96rem; color:#111111; font-weight:700;">Riwayat Versi</h3>
+                <button type="button" onclick="closeCmsHistoryModal()" class="btn-remove">Tutup</button>
             </div>
-            <p style="font-size:0.76rem; color:#64748b; margin-bottom:10px;">Setiap penyimpanan ke Cloud otomatis menyimpan salinan versi sebelumnya. Klik <b>Pulihkan</b> untuk mengembalikan konten ke versi tersebut.</p>
             <div id="cmsHistoryList" style="display:flex; flex-direction:column; gap:8px;"></div>
         </div>
     </div>
 
-    <div id="forcePasswordChangeModal" role="dialog" aria-modal="true" aria-labelledby="forcePwTitle" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.78); z-index:10050; align-items:center; justify-content:center; padding:16px;">
-        <div style="background:#fff; width:100%; max-width:440px; border-radius:14px; padding:22px; box-shadow:0 24px 60px rgba(0,0,0,0.35); border:2px solid #f59e0b;">
-            <h3 id="forcePwTitle" style="font-size:1.05rem; color:#92400e; font-weight:800; margin-bottom:8px;">🔒 Wajib Ganti Password Bawaan</h3>
-            <p style="font-size:0.8rem; color:#475569; line-height:1.5; margin-bottom:14px;">Akun Anda masih memakai password bawaan (<b>ohsnap</b>). Demi keamanan, seluruh operasi simpan &amp; upload dikunci oleh server sampai Anda mengganti password dengan minimal 8 karakter.</p>
+    <div id="forcePasswordChangeModal" role="dialog" aria-modal="true" aria-labelledby="forcePwTitle" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:10050; align-items:center; justify-content:center; padding:16px;">
+        <div style="background:#ffffff; width:100%; max-width:420px; border-radius:12px; padding:24px; box-shadow:0 24px 60px rgba(0,0,0,0.25); border:1px solid #111111;">
+            <h3 id="forcePwTitle" style="font-size:1rem; color:#111111; font-weight:700; margin-bottom:6px;">Wajib Ganti Password</h3>
+            <p style="font-size:0.8rem; color:#52525b; line-height:1.5; margin-bottom:16px;">Ganti password bawaan terlebih dahulu sebelum menggunakan dashboard.</p>
             <div class="form-group">
                 <label>Password Saat Ini</label>
                 <div class="password-container">
-                    <input type="password" id="forceOldPass" placeholder="Masukkan password saat ini" autocomplete="current-password">
+                    <input type="password" id="forceOldPass" placeholder="Password saat ini" autocomplete="current-password">
                     <button type="button" class="toggle-password" onclick="togglePasswordVisibility('forceOldPass', this)">👁️</button>
                 </div>
             </div>
             <div class="form-group">
-                <label>Password Baru (Min. 8 Karakter, bukan "ohsnap")</label>
+                <label>Password Baru</label>
                 <div class="password-container">
-                    <input type="password" id="forceNewPass" placeholder="Minimal 8 karakter kuat" autocomplete="new-password">
+                    <input type="password" id="forceNewPass" placeholder="Min. 8 karakter" autocomplete="new-password">
                     <button type="button" class="toggle-password" onclick="togglePasswordVisibility('forceNewPass', this)">👁️</button>
                 </div>
             </div>
@@ -519,15 +639,15 @@
                     <button type="button" class="toggle-password" onclick="togglePasswordVisibility('forceConfirmPass', this)">👁️</button>
                 </div>
             </div>
-            <div id="forcePwErr" style="display:none; margin-bottom:10px; padding:8px 10px; border-radius:8px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; font-size:0.78rem; font-weight:600;"></div>
-            <div style="display:flex; gap:8px; margin-top:12px;">
-                <button type="button" id="btnForceSavePw" class="btn-add" style="flex:1; padding:9px; background:var(--primary);" onclick="submitForcedPasswordChange()">💾 Simpan Password Baru</button>
-                <button type="button" class="btn-remove" style="padding:9px 12px;" onclick="logoutAdmin()">🚪 Keluar</button>
+            <div id="forcePwErr" class="notice-banner" style="margin-bottom:12px;"></div>
+            <div style="display:flex; gap:8px; margin-top:14px;">
+                <button type="button" id="btnForceSavePw" class="btn-add" style="flex:1; padding:9px;" onclick="submitForcedPasswordChange()">Simpan Password</button>
+                <button type="button" class="btn-remove" style="padding:9px 14px;" onclick="logoutAdmin()">Keluar</button>
             </div>
         </div>
     </div>
 
-    <div id="toast" role="status" aria-live="polite" class="toast-notif">✅ Berhasil disimpan!</div>
+    <div id="toast" role="status" aria-live="polite" class="toast-notif">Berhasil disimpan</div>
 
     <script>
         // Proteksi Login Admin
@@ -885,11 +1005,11 @@
             if (!el) return;
             el.textContent = text;
             if (state === 'ok') {
-                el.style.background = '#f0fdf4'; el.style.color = '#16a34a'; el.style.borderColor = '#bbf7d0';
+                el.style.background = '#f4f4f5'; el.style.color = '#18181b'; el.style.borderColor = '#e4e4e7';
             } else if (state === 'wait') {
-                el.style.background = '#fefce8'; el.style.color = '#ca8a04'; el.style.borderColor = '#fde047';
+                el.style.background = '#ffffff'; el.style.color = '#52525b'; el.style.borderColor = '#d4d4d8';
             } else {
-                el.style.background = '#fef2f2'; el.style.color = '#dc2626'; el.style.borderColor = '#fecaca';
+                el.style.background = '#111111'; el.style.color = '#ffffff'; el.style.borderColor = '#111111';
             }
         }
 
@@ -1011,7 +1131,7 @@
             setSyncBadge('err', '⚠️ Sesi Habis (Draft Aman)');
             showSessionDraftBanner(
                 '<b>🔒 Sesi login Anda telah habis.</b> Semua editan terakhir Anda aman tersimpan sebagai <b>draft di browser ini</b> dan tidak akan hilang. ' +
-                '<button type="button" onclick="logoutAdmin(true)" style="margin-left:8px; background:#dc2626; color:#fff; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.76rem; cursor:pointer;">🔑 Login Ulang & Pulihkan Draft</button>'
+                '<button type="button" onclick="logoutAdmin(true)" style="margin-left:8px; background:#111111; color:#ffffff; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.76rem; cursor:pointer;">🔑 Login Ulang & Pulihkan Draft</button>'
             );
         }
 
@@ -1269,7 +1389,7 @@
             if (wrap) {
                 const url = (cmsData.banners[page] && cmsData.banners[page].imgUrl) ? cmsData.banners[page].imgUrl : '';
                 if (url && url.trim() !== '' && !LEGACY_PLACEHOLDER_IMGS.includes(url)) {
-                    wrap.innerHTML = `<div class="media-preview-box"><img src="${escAttr(url)}" onerror="this.style.display='none'"><span>✅ Gambar Banner Aktif</span></div>`;
+                    wrap.innerHTML = `<div class="media-preview-box"><img src="${escAttr(url)}" onerror="this.style.display='none'"><span>Gambar aktif</span></div>`;
                 } else {
                     wrap.innerHTML = '';
                 }
@@ -1279,7 +1399,7 @@
             if (aboutWrap) {
                 const aboutUrl = (cmsData.banners.about && cmsData.banners.about.imgUrl) ? cmsData.banners.about.imgUrl : '';
                 if (aboutUrl && aboutUrl.trim() !== '' && !LEGACY_PLACEHOLDER_IMGS.includes(aboutUrl)) {
-                    aboutWrap.innerHTML = `<div class="media-preview-box"><img src="${escAttr(aboutUrl)}" onerror="this.style.display='none'"><span>✅ Foto About Story Aktif</span></div>`;
+                    aboutWrap.innerHTML = `<div class="media-preview-box"><img src="${escAttr(aboutUrl)}" onerror="this.style.display='none'"><span>Foto aktif</span></div>`;
                 } else {
                     aboutWrap.innerHTML = '';
                 }
@@ -1531,14 +1651,14 @@
             aboutFields.style.display = (page === 'about') ? 'block' : 'none';
 
             const labelMap = {
-                home: '🖼️ Upload Gambar Hero Banner Beranda (Atau Isi URL):',
-                about: '📸 Upload Foto About Our Story (Atau Isi URL):',
-                layanan: '🖼️ Upload Gambar Banner Halaman Layanan:',
-                frame: '🖼️ Upload Gambar Banner Halaman Frame:',
-                lokasi: '🖼️ Upload Gambar Banner Halaman Lokasi:'
+                home: 'Gambar Banner',
+                about: 'Foto About Our Story',
+                layanan: 'Gambar Banner',
+                frame: 'Gambar Banner',
+                lokasi: 'Gambar Banner'
             };
             const lblEl = document.getElementById('bannerUploadLabel');
-            if (lblEl) lblEl.textContent = labelMap[page] || '🖼️ Upload Gambar Banner:';
+            if (lblEl) lblEl.textContent = labelMap[page] || 'Gambar Banner';
 
             const quickAboutBox = document.getElementById('quickAboutPhotoBox');
             if (quickAboutBox) {
@@ -1564,10 +1684,10 @@
             const imgInput = document.getElementById('bannerImgUrl');
             if (b.imgUrl && b.imgUrl.startsWith('data:image')) {
                 imgInput.value = '';
-                imgInput.placeholder = '✅ Foto dari komputer sudah tersimpan (lihat preview di bawah)';
+                imgInput.placeholder = 'Foto tersimpan';
             } else {
                 imgInput.value = (b.imgUrl && !LEGACY_PLACEHOLDER_IMGS.includes(b.imgUrl)) ? b.imgUrl : '';
-                imgInput.placeholder = 'Klik Choose File di bawah atau tempel link URL...';
+                imgInput.placeholder = 'URL gambar atau pilih file';
             }
 
             const aboutQuickInput = document.getElementById('aboutQuickImgUrl');
@@ -1575,10 +1695,10 @@
             if (aboutQuickInput) {
                 if (aboutUrl && aboutUrl.startsWith('data:image')) {
                     aboutQuickInput.value = '';
-                    aboutQuickInput.placeholder = '✅ Foto About Story sudah tersimpan (lihat preview di bawah)';
+                    aboutQuickInput.placeholder = 'Foto tersimpan';
                 } else {
                     aboutQuickInput.value = (aboutUrl && !LEGACY_PLACEHOLDER_IMGS.includes(aboutUrl)) ? aboutUrl : '';
-                    aboutQuickInput.placeholder = 'Klik Choose File di bawah atau tempel link URL...';
+                    aboutQuickInput.placeholder = 'URL gambar atau pilih file';
                 }
             }
 
@@ -1688,24 +1808,24 @@
                 const lockAttr = isUp ? 'disabled style="opacity:0.5;cursor:wait;"' : '';
                 let navHtml = total > 5 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveVideo(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveVideo(${i}, 1)">&gt;</button>` : ''}</div>` : '';
                 const inputVal = v.url || '';
-                const inputPlaceholder = 'https://www.instagram.com/... atau Upload MP4 di bawah';
+                const inputPlaceholder = 'URL video atau pilih file MP4';
                 
                 let previewBadge = '';
                 if (isUp) {
-                    previewBadge = `<div class="media-preview-box" style="color:#ca8a04;"><span>⏳ Sedang mengunggah video ke Cloud...</span></div>`;
+                    previewBadge = `<div class="media-preview-box"><span>Mengunggah video...</span></div>`;
                 } else if (v.url && v.url !== '#' && v.url.trim() !== '') {
-                    previewBadge = `<div class="media-preview-box"><span>🔗 Link Video Aktif: ${escAttr(v.url.slice(0, 35))}...</span></div>`;
+                    previewBadge = `<div class="media-preview-box"><span>Video aktif</span></div>`;
                 }
 
                 const linkTargetVal = v.linkUrl || '';
                 const linkTargetBadge = (linkTargetVal && linkTargetVal.trim() !== '')
-                    ? `<div class="media-preview-box" style="margin-top:6px;"><span>🔗 Tombol Link Saat Pause Aktif: ${escAttr(linkTargetVal.slice(0, 35))}...</span></div>`
+                    ? `<div class="media-preview-box" style="margin-top:6px;"><span>Link tujuan aktif</span></div>`
                     : '';
 
                 cards.push(`<div class="item-card"><h4><span>Video #${i+1}</span><div style="display:flex;gap:6px;align-items:center;">${navHtml}<button class="btn-remove" ${lockAttr} onclick="removeVideo(${i})">Hapus</button></div></h4>
-                    <div class="form-group"><label>Judul Video</label><input type="text" value="${escAttr(v.title || '')}" oninput="cmsData.videos[${i}].title=this.value; persistData();"></div>
-                    <div class="form-group"><label>Link URL (IG/TikTok/MP4) atau Upload File MP4 (disarankan &lt;8 MB agar hemat kuota Supabase)</label><div class="input-with-clear"><input type="text" value="${escAttr(inputVal)}" placeholder="${escAttr(inputPlaceholder)}" oninput="cmsData.videos[${i}].url=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('videos','${escAttr(uid)}','url')">❌ X</button></div><input type="file" accept="video/mp4,video/*" ${lockAttr} style="margin-top:6px;" onchange="uploadVideoFile(this,'videos','${escAttr(uid)}','url')">${previewBadge}</div>
-                    <div class="form-group" style="margin-bottom:0; margin-top:10px;"><label>🔗 Link Tujuan Saat Video Dipause / Stop (IG / TikTok / Sosmed)</label><div class="input-with-clear"><input type="text" value="${escAttr(linkTargetVal)}" placeholder="https://www.tiktok.com/... atau https://www.instagram.com/..." oninput="cmsData.videos[${i}].linkUrl=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" onclick="cmsData.videos[${i}].linkUrl=''; persistData(); renderVideos();">❌ X</button></div>${linkTargetBadge}</div></div>`);
+                    <div class="form-group"><label>Judul</label><input type="text" value="${escAttr(v.title || '')}" oninput="cmsData.videos[${i}].title=this.value; persistData();"></div>
+                    <div class="form-group"><label>Video</label><div class="input-with-clear"><input type="text" value="${escAttr(inputVal)}" placeholder="${escAttr(inputPlaceholder)}" oninput="cmsData.videos[${i}].url=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('videos','${escAttr(uid)}','url')">&times;</button></div><input type="file" accept="video/mp4,video/*" ${lockAttr} style="margin-top:6px;" onchange="uploadVideoFile(this,'videos','${escAttr(uid)}','url')">${previewBadge}</div>
+                    <div class="form-group" style="margin-bottom:0;"><label>Link Tujuan</label><div class="input-with-clear"><input type="text" value="${escAttr(linkTargetVal)}" placeholder="https://..." oninput="cmsData.videos[${i}].linkUrl=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" onclick="cmsData.videos[${i}].linkUrl=''; persistData(); renderVideos();">&times;</button></div>${linkTargetBadge}</div></div>`);
             });
             c.innerHTML = cards.join('');
 
@@ -1744,17 +1864,17 @@
                 let navHtml = total > 4 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveStudio(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveStudio(${i}, 1)">&gt;</button>` : ''}</div>` : '';
                 const isBase64 = s.img && s.img.startsWith('data:image');
                 const displayVal = isBase64 ? '' : (s.img || '');
-                const placeholderVal = isBase64 ? '✅ Foto dari komputer sudah tersimpan' : 'Upload foto di bawah atau isi URL';
+                const placeholderVal = isBase64 ? 'Foto tersimpan' : 'URL foto atau pilih file';
                 const previewHtml = isUp
-                    ? `<div class="media-preview-box" style="color:#ca8a04;"><span>⏳ Mengunggah foto...</span></div>`
-                    : ((s.img && s.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(s.img)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><span>✅ Foto Studio Aktif</span></div>` : '');
+                    ? `<div class="media-preview-box"><span>Mengunggah foto...</span></div>`
+                    : ((s.img && s.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(s.img)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><span>Foto aktif</span></div>` : '');
 
                 cards.push(`<div class="item-card"><h4><span>Studio #${i+1}</span><div style="display:flex;gap:6px;align-items:center;">${navHtml}<button class="btn-remove" ${lockAttr} onclick="removeStudio(${i})">Hapus</button></div></h4>
                     <div class="form-group"><label>Nama (ID)</label><input type="text" value="${escAttr(s.title || '')}" oninput="cmsData.studios[${i}].title=this.value; persistData();"></div>
-                    <div class="form-group"><label>Nama (EN - Opsional)</label><input type="text" value="${escAttr(s.titleEn || '')}" placeholder="Kosongkan jika sama dengan ID" oninput="cmsData.studios[${i}].titleEn=this.value; persistData();"></div>
+                    <div class="form-group"><label>Nama (EN)</label><input type="text" value="${escAttr(s.titleEn || '')}" oninput="cmsData.studios[${i}].titleEn=this.value; persistData();"></div>
                     <div class="form-group"><label>Deskripsi (ID)</label><input type="text" value="${escAttr(s.desc || '')}" oninput="cmsData.studios[${i}].desc=this.value; persistData();"></div>
-                    <div class="form-group"><label>Deskripsi (EN - Opsional)</label><input type="text" value="${escAttr(s.descEn || '')}" placeholder="Kosongkan jika sama dengan ID" oninput="cmsData.studios[${i}].descEn=this.value; persistData();"></div>
-                    <div class="form-group"><label>Foto</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.studios[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('studios','${escAttr(uid)}','img')">❌ X</button></div><input type="file" accept="image/*" ${lockAttr} style="margin-top:6px;" onchange="uploadArrayImg(this,'studios','${escAttr(uid)}','img')">${previewHtml}</div></div>`);
+                    <div class="form-group"><label>Deskripsi (EN)</label><input type="text" value="${escAttr(s.descEn || '')}" oninput="cmsData.studios[${i}].descEn=this.value; persistData();"></div>
+                    <div class="form-group"><label>Foto</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.studios[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('studios','${escAttr(uid)}','img')">&times;</button></div><input type="file" accept="image/*" ${lockAttr} style="margin-top:6px;" onchange="uploadArrayImg(this,'studios','${escAttr(uid)}','img')">${previewHtml}</div></div>`);
             });
             c.innerHTML = cards.join('');
         }
@@ -1787,18 +1907,18 @@
                 let navHtml = total > 3 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="movePromo(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="movePromo(${i}, 1)">&gt;</button>` : ''}</div>` : '';
                 const isBase64 = p.img && p.img.startsWith('data:image');
                 const displayVal = isBase64 ? '' : (p.img || '');
-                const placeholderVal = isBase64 ? '✅ Poster dari komputer sudah tersimpan' : 'Upload poster di bawah atau isi URL';
+                const placeholderVal = isBase64 ? 'Poster tersimpan' : 'URL poster atau pilih file';
                 const previewHtml = isUp
-                    ? `<div class="media-preview-box" style="color:#ca8a04;"><span>⏳ Mengunggah poster...</span></div>`
-                    : ((p.img && p.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(p.img)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><span>✅ Poster Promo Aktif</span></div>` : '');
+                    ? `<div class="media-preview-box"><span>Mengunggah poster...</span></div>`
+                    : ((p.img && p.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(p.img)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><span>Poster aktif</span></div>` : '');
 
                 cards.push(`<div class="item-card"><h4><span>Promo #${i+1}</span><div style="display:flex;gap:6px;align-items:center;">${navHtml}<button class="btn-remove" ${lockAttr} onclick="removePromo(${i})">Hapus</button></div></h4>
                     <div class="form-group"><label>Judul (ID)</label><input type="text" value="${escAttr(p.title || '')}" oninput="cmsData.promos[${i}].title=this.value; persistData();"></div>
-                    <div class="form-group"><label>Judul (EN - Opsional)</label><input type="text" value="${escAttr(p.titleEn || '')}" placeholder="Kosongkan jika sama dengan ID" oninput="cmsData.promos[${i}].titleEn=this.value; persistData();"></div>
+                    <div class="form-group"><label>Judul (EN)</label><input type="text" value="${escAttr(p.titleEn || '')}" oninput="cmsData.promos[${i}].titleEn=this.value; persistData();"></div>
                     <div class="form-group"><label>Badge</label><input type="text" value="${escAttr(p.badge || '')}" oninput="cmsData.promos[${i}].badge=this.value; persistData();"></div>
                     <div class="form-group"><label>Deskripsi (ID)</label><textarea oninput="cmsData.promos[${i}].desc=this.value; persistData();">${escAttr(p.desc || '')}</textarea></div>
-                    <div class="form-group"><label>Deskripsi (EN - Opsional)</label><textarea placeholder="Kosongkan jika sama dengan ID" oninput="cmsData.promos[${i}].descEn=this.value; persistData();">${escAttr(p.descEn || '')}</textarea></div>
-                    <div class="form-group"><label>Poster</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.promos[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('promos','${escAttr(uid)}','img')">❌ X</button></div><input type="file" accept="image/*" ${lockAttr} style="margin-top:6px;" onchange="uploadArrayImg(this,'promos','${escAttr(uid)}','img')">${previewHtml}</div></div>`);
+                    <div class="form-group"><label>Deskripsi (EN)</label><textarea oninput="cmsData.promos[${i}].descEn=this.value; persistData();">${escAttr(p.descEn || '')}</textarea></div>
+                    <div class="form-group"><label>Poster</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.promos[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('promos','${escAttr(uid)}','img')">&times;</button></div><input type="file" accept="image/*" ${lockAttr} style="margin-top:6px;" onchange="uploadArrayImg(this,'promos','${escAttr(uid)}','img')">${previewHtml}</div></div>`);
             });
             c.innerHTML = cards.join('');
         }
@@ -1834,10 +1954,10 @@
                 let navHtml = total > 5 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveFrame(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveFrame(${i}, 1)">&gt;</button>` : ''}</div>` : '';
                 const isBase64 = f.img && f.img.startsWith('data:image');
                 const displayVal = isBase64 ? '' : (f.img || '');
-                const placeholderVal = isBase64 ? '✅ Gambar Frame sudah tersimpan' : 'Upload frame di bawah atau isi URL';
+                const placeholderVal = isBase64 ? 'Gambar tersimpan' : 'URL gambar atau pilih file';
                 const previewHtml = isUp
-                    ? `<div class="media-preview-box" style="color:#ca8a04;"><span>⏳ Mengunggah frame...</span></div>`
-                    : ((f.img && f.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(f.img)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><span>✅ Frame Aktif</span></div>` : '');
+                    ? `<div class="media-preview-box"><span>Mengunggah frame...</span></div>`
+                    : ((f.img && f.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(f.img)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><span>Gambar aktif</span></div>` : '');
                 
                 cards.push(`<div class="item-card">
                     <h4>
@@ -1847,12 +1967,12 @@
                             <button class="btn-remove" ${lockAttr} onclick="removeFrame(${i})">Hapus</button>
                         </div>
                     </h4>
-                    <div class="form-group"><label>Nama Frame (ID)</label><input type="text" value="${escAttr(f.title || '')}" oninput="cmsData.frames[${i}].title=this.value; persistData();"></div>
-                    <div class="form-group"><label>Nama Frame (EN - Opsional)</label><input type="text" value="${escAttr(f.titleEn || '')}" placeholder="Kosongkan jika sama dengan ID" oninput="cmsData.frames[${i}].titleEn=this.value; persistData();"></div>
+                    <div class="form-group"><label>Nama (ID)</label><input type="text" value="${escAttr(f.title || '')}" oninput="cmsData.frames[${i}].title=this.value; persistData();"></div>
+                    <div class="form-group"><label>Nama (EN)</label><input type="text" value="${escAttr(f.titleEn || '')}" oninput="cmsData.frames[${i}].titleEn=this.value; persistData();"></div>
                     <div class="form-group"><label>Kategori</label><input type="text" value="${escAttr(f.category || '')}" oninput="cmsData.frames[${i}].category=this.value; persistData();"></div>
-                    <div class="form-group"><label>Deskripsi Frame (ID)</label><textarea oninput="cmsData.frames[${i}].desc=this.value; persistData();">${escAttr(f.desc || '')}</textarea></div>
-                    <div class="form-group"><label>Deskripsi Frame (EN - Opsional)</label><textarea placeholder="Kosongkan jika sama dengan ID" oninput="cmsData.frames[${i}].descEn=this.value; persistData();">${escAttr(f.descEn || '')}</textarea></div>
-                    <div class="form-group"><label>Gambar Frame</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.frames[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('frames','${escAttr(uid)}','img')">❌ X</button></div><input type="file" accept="image/*" ${lockAttr} style="margin-top:6px;" onchange="uploadArrayImg(this,'frames','${escAttr(uid)}','img')">${previewHtml}</div>
+                    <div class="form-group"><label>Deskripsi (ID)</label><textarea oninput="cmsData.frames[${i}].desc=this.value; persistData();">${escAttr(f.desc || '')}</textarea></div>
+                    <div class="form-group"><label>Deskripsi (EN)</label><textarea oninput="cmsData.frames[${i}].descEn=this.value; persistData();">${escAttr(f.descEn || '')}</textarea></div>
+                    <div class="form-group"><label>Gambar</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.frames[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('frames','${escAttr(uid)}','img')">&times;</button></div><input type="file" accept="image/*" ${lockAttr} style="margin-top:6px;" onchange="uploadArrayImg(this,'frames','${escAttr(uid)}','img')">${previewHtml}</div>
                 </div>`);
             });
             c.innerHTML = cards.join('');
@@ -1889,10 +2009,10 @@
                 let navHtml = total > 3 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveService(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveService(${i}, 1)">&gt;</button>` : ''}</div>` : '';
                 const isBase64 = s.img && s.img.startsWith('data:image');
                 const displayVal = isBase64 ? '' : (s.img || '');
-                const placeholderVal = isBase64 ? '✅ Foto Layanan sudah tersimpan' : 'Upload foto di bawah atau isi URL';
+                const placeholderVal = isBase64 ? 'Foto tersimpan' : 'URL foto atau pilih file';
                 const previewHtml = isUp
-                    ? `<div class="media-preview-box" style="color:#ca8a04;"><span>⏳ Mengunggah foto...</span></div>`
-                    : ((s.img && s.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(s.img)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><span>✅ Foto Layanan Aktif</span></div>` : '');
+                    ? `<div class="media-preview-box"><span>Mengunggah foto...</span></div>`
+                    : ((s.img && s.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(s.img)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><span>Foto aktif</span></div>` : '');
                 
                 cards.push(`<div class="item-card">
                     <h4>
@@ -1902,12 +2022,12 @@
                             <button class="btn-remove" ${lockAttr} onclick="removeSrv(${i})">Hapus</button>
                         </div>
                     </h4>
-                    <div class="form-group"><label>Judul Layanan (ID)</label><input type="text" value="${escAttr(s.titleId || s.title || '')}" oninput="cmsData.services[${i}].titleId=this.value; persistData();"></div>
-                    <div class="form-group"><label>Judul Layanan (EN - Opsional)</label><input type="text" value="${escAttr(s.titleEn || '')}" placeholder="Kosongkan jika sama dengan ID" oninput="cmsData.services[${i}].titleEn=this.value; persistData();"></div>
-                    <div class="form-group"><label>Harga (Contoh: Rp 35.000)</label><input type="text" value="${escAttr(s.price || '')}" oninput="cmsData.services[${i}].price=this.value; persistData();"></div>
-                    <div class="form-group"><label>Deskripsi Layanan (ID)</label><textarea oninput="cmsData.services[${i}].descId=this.value; persistData();">${escAttr(s.descId || s.desc || '')}</textarea></div>
-                    <div class="form-group"><label>Deskripsi Layanan (EN - Opsional)</label><textarea placeholder="Kosongkan jika sama dengan ID" oninput="cmsData.services[${i}].descEn=this.value; persistData();">${escAttr(s.descEn || '')}</textarea></div>
-                    <div class="form-group"><label>Foto Layanan (Format Portrait)</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.services[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('services','${escAttr(uid)}','img')">❌ X</button></div><input type="file" accept="image/*" ${lockAttr} style="margin-top:6px;" onchange="uploadArrayImg(this,'services','${escAttr(uid)}','img')">${previewHtml}</div>
+                    <div class="form-group"><label>Judul (ID)</label><input type="text" value="${escAttr(s.titleId || s.title || '')}" oninput="cmsData.services[${i}].titleId=this.value; persistData();"></div>
+                    <div class="form-group"><label>Judul (EN)</label><input type="text" value="${escAttr(s.titleEn || '')}" oninput="cmsData.services[${i}].titleEn=this.value; persistData();"></div>
+                    <div class="form-group"><label>Harga</label><input type="text" value="${escAttr(s.price || '')}" placeholder="Rp 35.000" oninput="cmsData.services[${i}].price=this.value; persistData();"></div>
+                    <div class="form-group"><label>Deskripsi (ID)</label><textarea oninput="cmsData.services[${i}].descId=this.value; persistData();">${escAttr(s.descId || s.desc || '')}</textarea></div>
+                    <div class="form-group"><label>Deskripsi (EN)</label><textarea oninput="cmsData.services[${i}].descEn=this.value; persistData();">${escAttr(s.descEn || '')}</textarea></div>
+                    <div class="form-group"><label>Foto</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.services[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('services','${escAttr(uid)}','img')">&times;</button></div><input type="file" accept="image/*" ${lockAttr} style="margin-top:6px;" onchange="uploadArrayImg(this,'services','${escAttr(uid)}','img')">${previewHtml}</div>
                 </div>`);
             });
             c.innerHTML = cards.join('');
@@ -1941,10 +2061,10 @@
                 let navHtml = total > 5 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveLocation(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveLocation(${i}, 1)">&gt;</button>` : ''}</div>` : '';
                 const isBase64 = l.img && l.img.startsWith('data:image');
                 const displayVal = isBase64 ? '' : (l.img || '');
-                const placeholderVal = isBase64 ? '✅ Foto Cabang sudah tersimpan' : 'Upload foto di bawah atau isi URL';
+                const placeholderVal = isBase64 ? 'Foto tersimpan' : 'URL foto atau pilih file';
                 const previewHtml = isUp
-                    ? `<div class="media-preview-box" style="color:#ca8a04;"><span>⏳ Mengunggah foto...</span></div>`
-                    : ((l.img && l.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(l.img)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><span>✅ Foto Cabang Aktif</span></div>` : '');
+                    ? `<div class="media-preview-box"><span>Mengunggah foto...</span></div>`
+                    : ((l.img && l.img.trim() !== '') ? `<div class="media-preview-box"><img src="${escAttr(l.img)}" loading="lazy" decoding="async" onerror="this.style.display='none'"><span>Foto aktif</span></div>` : '');
 
                 cards.push(`<div class="item-card"><h4><span>Lokasi #${i+1}</span><div style="display:flex;gap:6px;align-items:center;">${navHtml}<button class="btn-remove" ${lockAttr} onclick="removeLoc(${i})">Hapus</button></div></h4>
                     <div class="form-group"><label>Nama Cabang</label><input type="text" value="${escAttr(l.name || '')}" oninput="cmsData.locations[${i}].name=this.value; persistData();"></div>
@@ -1952,10 +2072,10 @@
                     <div class="form-group"><label>Jam Buka</label><input type="text" value="${escAttr(l.hours || '')}" oninput="cmsData.locations[${i}].hours=this.value; persistData();"></div>
                     <div class="form-group"><label>Maps URL</label><input type="text" value="${escAttr(l.mapUrl || '')}" oninput="onLocationMapUrlInput(${i}, this.value)"></div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-                        <div class="form-group"><label>Latitude (GPS)</label><input type="text" id="locLat_${i}" value="${escAttr(l.lat || '')}" placeholder="Otomatis / -7.8166" oninput="cmsData.locations[${i}].lat=this.value.trim(); persistData();"></div>
-                        <div class="form-group"><label>Longitude (GPS)</label><input type="text" id="locLng_${i}" value="${escAttr(l.lng || '')}" placeholder="Otomatis / 112.0163" oninput="cmsData.locations[${i}].lng=this.value.trim(); persistData();"></div>
+                        <div class="form-group"><label>Latitude</label><input type="text" id="locLat_${i}" value="${escAttr(l.lat || '')}" placeholder="-7.8166" oninput="cmsData.locations[${i}].lat=this.value.trim(); persistData();"></div>
+                        <div class="form-group"><label>Longitude</label><input type="text" id="locLng_${i}" value="${escAttr(l.lng || '')}" placeholder="112.0163" oninput="cmsData.locations[${i}].lng=this.value.trim(); persistData();"></div>
                     </div>
-                    <div class="form-group"><label>Foto Cabang (Format 1:1)</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.locations[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('locations','${escAttr(uid)}','img')">❌ X</button></div><input type="file" accept="image/*" ${lockAttr} style="margin-top:6px;" onchange="uploadArrayImg(this,'locations','${escAttr(uid)}','img')">${previewHtml}</div></div>`);
+                    <div class="form-group"><label>Foto</label><div class="input-with-clear"><input type="text" value="${escAttr(displayVal)}" placeholder="${escAttr(placeholderVal)}" oninput="cmsData.locations[${i}].img=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" ${lockAttr} onclick="clearArrayImg('locations','${escAttr(uid)}','img')">&times;</button></div><input type="file" accept="image/*" ${lockAttr} style="margin-top:6px;" onchange="uploadArrayImg(this,'locations','${escAttr(uid)}','img')">${previewHtml}</div></div>`);
             });
             c.innerHTML = cards.join('');
         }
@@ -2077,7 +2197,7 @@
             if (!box) return;
             if (!msg) { box.style.display = 'none'; box.innerHTML = ''; return; }
             const reloginBtn = isAuthError
-                ? '<div style="margin-top:6px;"><button type="button" onclick="logoutAdmin(true)" style="background:#dc2626;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-weight:700;font-size:0.75rem;cursor:pointer;">🔑 Login Ulang Sekarang</button></div>'
+                ? '<div style="margin-top:6px;"><button type="button" onclick="logoutAdmin(true)" style="background:#111111;color:#ffffff;border:none;padding:5px 12px;border-radius:6px;font-weight:700;font-size:0.75rem;cursor:pointer;">🔑 Login Ulang Sekarang</button></div>'
                 : '';
             box.innerHTML = '<b>⚠️ Data Spreadsheet belum bisa dimuat</b><br>' + escAttr(msg) + reloginBtn;
             box.style.display = 'block';
@@ -2089,7 +2209,7 @@
             if (!bar || !btn) return;
             if (resendTotalCount > resendList.length) {
                 const sisa = resendTotalCount - resendList.length;
-                btn.textContent = '⬇️ Muat Lebih Banyak (' + sisa + ' data lagi)';
+                btn.textContent = 'Muat Lebih Banyak (' + sisa + ')';
                 bar.style.display = 'block';
             } else {
                 bar.style.display = 'none';
@@ -2114,7 +2234,7 @@
             if (btn) {
                 btn.disabled = true;
                 btn.style.opacity = '0.6';
-                btn.textContent = '⏳ Memuat Data...';
+                btn.textContent = 'Memuat...';
             }
             if (!resendList || resendList.length === 0) {
                 renderResendTable();
@@ -2219,7 +2339,7 @@
                 if (btn) {
                     btn.disabled = false;
                     btn.style.opacity = '';
-                    btn.textContent = '🔄 Refresh Data Spreadsheet';
+                    btn.textContent = 'Refresh';
                 }
             }
         }
@@ -2305,8 +2425,8 @@
                     : '#';
                 const emailTargetAttr = isMobileDevice ? '' : 'target="_blank" rel="noopener noreferrer"';
                 const emailBtnHtml = validEmail
-                    ? `<a href="${escAttr(emailUrl)}" ${emailTargetAttr} class="btn-action-email">✉️ Email</a>`
-                    : `<span class="btn-action-email" style="opacity:0.45;cursor:not-allowed;" title="Email tidak valid">✉️ Email</span>`;
+                    ? `<a href="${escAttr(emailUrl)}" ${emailTargetAttr} class="btn-action-email">Email</a>`
+                    : `<span class="btn-action-email" style="opacity:0.4;cursor:not-allowed;" title="Email tidak valid">Email</span>`;
 
                 rowsHtml.push(`
                     <tr class="${isSudah?'row-sudah':'row-belum'}">
@@ -2319,14 +2439,14 @@
                         <td>${escAttr(r.whatsapp || r.no_hp || r.hp || '-')}</td>
                         <td>${escAttr(customerEmail || '-')}</td>
                         <td>${escAttr(cabangCust)}</td>
-                        <td>${linkFoto && linkFoto !== '#' ? `<a href="${escAttr(linkFoto)}" target="_blank" rel="noopener noreferrer" class="link-drive">📁 Lihat Foto</a>` : '-'}</td>
+                        <td>${linkFoto && linkFoto !== '#' ? `<a href="${escAttr(linkFoto)}" target="_blank" rel="noopener noreferrer" class="link-drive">Lihat Foto</a>` : '-'}</td>
                         <td>
                             <div class="action-btns-group">
-                                <a href="${escAttr(waUrl)}" target="_blank" rel="noopener noreferrer" class="btn-action-wa">💬 WA</a>
+                                <a href="${escAttr(waUrl)}" target="_blank" rel="noopener noreferrer" class="btn-action-wa">WA</a>
                                 ${emailBtnHtml}
                             </div>
                         </td>
-                        <td><button class="btn-toggle-status ${isSudah?'btn-status-sudah':'btn-status-belum'}" ${r._updatingStatus ? 'disabled style="opacity:0.65; cursor:wait;"' : ''} onclick="toggleStatus(${i},'${isSudah ? 'Sudah' : 'Belum'}')">${r._updatingStatus ? '⏳ Menyimpan...' : (isSudah?'✔ SUDAH':'❗ BELUM')}</button></td>
+                        <td><button class="btn-toggle-status ${isSudah?'btn-status-sudah':'btn-status-belum'}" ${r._updatingStatus ? 'disabled style="opacity:0.65; cursor:wait;"' : ''} onclick="toggleStatus(${i},'${isSudah ? 'Sudah' : 'Belum'}')">${r._updatingStatus ? 'Menyimpan...' : (isSudah?'Sudah':'Belum')}</button></td>
                         <td><button class="btn-remove" ${r._updatingStatus ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''} onclick="delResend(${i})">Hapus</button></td>
                     </tr>`);
             });
@@ -2486,8 +2606,8 @@
                 const role = (a.role || 'admin').toLowerCase();
                 const isLastOwner = (role === 'owner' && ownerCount <= 1);
                 const roleBadge = role === 'owner'
-                    ? '<span style="background:#fef3c7;color:#b45309;padding:2px 7px;border-radius:6px;font-weight:700;font-size:0.68rem;">👑 OWNER</span>'
-                    : '<span style="background:#e0f2fe;color:#0369a1;padding:2px 7px;border-radius:6px;font-weight:700;font-size:0.68rem;">ADMIN</span>';
+                    ? '<span style="background:#111111;color:#ffffff;padding:2px 8px;border-radius:5px;font-weight:600;font-size:0.68rem;letter-spacing:0.03em;">OWNER</span>'
+                    : '<span style="background:#f4f4f5;color:#18181b;border:1px solid #d4d4d8;padding:2px 8px;border-radius:5px;font-weight:600;font-size:0.68rem;letter-spacing:0.03em;">ADMIN</span>';
                 const actionHtml = isSelf
                     ? '<span style="color:#64748b;font-size:0.72rem;font-weight:700;">Akun Anda</span>'
                     : (!isCallerOwner
@@ -2630,9 +2750,9 @@
             setSyncBadge('err', '⚠️ Bentrok Cloud (Perlu Konfirmasi)');
             showSessionDraftBanner(
                 '<b>⚠️ Sinkronisasi padat: Cloud baru saja diperbarui perangkat lain.</b> Autosave dijeda agar tidak ada data yang tertimpa diam-diam. Pilih tindakan Anda: ' +
-                '<button type="button" onclick="mergeAndRetrySave()" style="margin-left:8px; background:#10b981; color:#fff; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">🔄 Gabungkan Ulang &amp; Simpan</button> ' +
-                '<button type="button" onclick="reloadCloudDiscardLocal()" style="margin-left:4px; background:#64748b; color:#fff; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">☁️ Ambil Data Cloud</button> ' +
-                '<button type="button" onclick="if(confirm(\'Yakin menimpa perubahan perangkat lain dengan data di layar ini?\')){autoSavePausedReason=\'\';saveAllCMS(true, true);}" style="margin-left:4px; background:#dc2626; color:#fff; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">⚠️ Timpa Paksa</button>'
+                '<button type="button" onclick="mergeAndRetrySave()" style="margin-left:8px; background:#111111; color:#ffffff; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">🔄 Gabungkan Ulang &amp; Simpan</button> ' +
+                '<button type="button" onclick="reloadCloudDiscardLocal()" style="margin-left:4px; background:#ffffff; color:#111111; border:1px solid #d4d4d8; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">☁️ Ambil Data Cloud</button> ' +
+                '<button type="button" onclick="if(confirm(\'Yakin menimpa perubahan perangkat lain dengan data di layar ini?\')){autoSavePausedReason=\'\';saveAllCMS(true, true);}" style="margin-left:4px; background:#111111; color:#ffffff; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">⚠️ Timpa Paksa</button>'
             );
         }
 
@@ -2862,8 +2982,8 @@
                         setSyncBadge('wait', '📝 Ada Draft Belum Tersimpan');
                         showSessionDraftBanner(
                             '<b>📝 Ditemukan draft editan lokal yang belum sempat tersimpan ke Cloud.</b> Pilih tindakan Anda: ' +
-                            '<button type="button" onclick="restorePendingDraftChoice()" style="margin-left:8px; background:#10b981; color:#fff; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.76rem; cursor:pointer;">🔄 Pulihkan Draft & Simpan</button> ' +
-                            '<button type="button" onclick="discardPendingDraftChoice()" style="margin-left:4px; background:#64748b; color:#fff; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.76rem; cursor:pointer;">☁️ Pakai Data Cloud Terbaru</button>'
+                            '<button type="button" onclick="restorePendingDraftChoice()" style="margin-left:8px; background:#111111; color:#ffffff; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.76rem; cursor:pointer;">🔄 Pulihkan Draft & Simpan</button> ' +
+                            '<button type="button" onclick="discardPendingDraftChoice()" style="margin-left:4px; background:#ffffff; color:#111111; border:1px solid #d4d4d8; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.76rem; cursor:pointer;">☁️ Pakai Data Cloud Terbaru</button>'
                         );
                     } else {
                         cmsData = mergedRemote;
@@ -3098,12 +3218,12 @@
                         waktu = new Date(h.created_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'medium', timeStyle: 'medium' }) + ' WIB';
                     } catch (e) { waktu = String(h.created_at || '-'); }
                     const previewTitle = h.home_title ? ('Judul Home: "' + escAttr(String(h.home_title).slice(0, 48)) + '"') : 'Snapshot CMS';
-                    return `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0; flex-wrap:wrap;">
-                        <div style="font-size:0.78rem; color:#334155;">
-                            <div style="font-weight:700; color:var(--secondary);">Versi #${Number(h.id)} &bull; ${escAttr(waktu)}</div>
-                            <div style="color:#64748b; margin-top:2px;">Oleh: <b>${escAttr(h.saved_by || 'admin')}</b> &bull; ${previewTitle}</div>
+                    return `<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; background:#fafafa; border:1px solid #e5e7eb; flex-wrap:wrap;">
+                        <div style="font-size:0.78rem; color:#27272a;">
+                            <div style="font-weight:700; color:#111111;">Versi #${Number(h.id)} &bull; ${escAttr(waktu)}</div>
+                            <div style="color:#71717a; margin-top:2px;">${escAttr(h.saved_by || 'admin')} &bull; ${previewTitle}</div>
                         </div>
-                        <button type="button" onclick="restoreCmsHistoryItem(${Number(h.id)})" style="background:var(--primary); color:#fff; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.74rem; cursor:pointer;">↩️ Pulihkan</button>
+                        <button type="button" onclick="restoreCmsHistoryItem(${Number(h.id)})" class="btn-add" style="padding:5px 12px; font-size:0.74rem;">Pulihkan</button>
                     </div>`;
                 });
                 listEl.innerHTML = htmlItems.join('');
