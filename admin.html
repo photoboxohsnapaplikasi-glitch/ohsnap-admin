@@ -102,6 +102,10 @@
             color: #18181b; font-size: 0.8rem; line-height: 1.5;
         }
 
+        #sessionDraftBanner, #resendErrorBox, #forcePwErr {
+            background: #fef2f2; border-color: #fecaca; border-left-color: #dc2626; color: #7f1d1d;
+        }
+
         /* Section Cards */
         .admin-section {
             display: none !important; background: #ffffff; border: 1px solid var(--border-color);
@@ -1009,7 +1013,7 @@
             } else if (state === 'wait') {
                 el.style.background = '#ffffff'; el.style.color = '#52525b'; el.style.borderColor = '#d4d4d8';
             } else {
-                el.style.background = '#111111'; el.style.color = '#ffffff'; el.style.borderColor = '#111111';
+                el.style.background = '#fef2f2'; el.style.color = '#b91c1c'; el.style.borderColor = '#fecaca';
             }
         }
 
@@ -1571,7 +1575,7 @@
             const file = inputEl.files[0];
             if (!file) return;
             if (file.size > 3 * 1024 * 1024) {
-                alert('Video terlalu besar (maks 3 MB). Kompres dulu ke 720p, atau gunakan link YouTube/TikTok.');
+                alert('Video terlalu besar (maks 3 MB). Kompres dulu ke 720p, atau gunakan link TikTok/Instagram.');
                 inputEl.value = '';
                 return;
             }
@@ -2751,7 +2755,7 @@
             showSessionDraftBanner(
                 '<b>⚠️ Sinkronisasi padat: Cloud baru saja diperbarui perangkat lain.</b> Autosave dijeda agar tidak ada data yang tertimpa diam-diam. Pilih tindakan Anda: ' +
                 '<button type="button" onclick="mergeAndRetrySave()" style="margin-left:8px; background:#111111; color:#ffffff; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">🔄 Gabungkan Ulang &amp; Simpan</button> ' +
-                '<button type="button" onclick="reloadCloudDiscardLocal()" style="margin-left:4px; background:#ffffff; color:#111111; border:1px solid #d4d4d8; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">☁️ Ambil Data Cloud</button> ' +
+                '<button type="button" onclick="reloadCloudDiscardLocal()" style="margin-left:4px; background:#ffffff; color:#111111; border:1px solid #d4d4d8; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">☁️ Ambil Data Cloud</button> ' +
                 '<button type="button" onclick="if(confirm(\'Yakin menimpa perubahan perangkat lain dengan data di layar ini?\')){autoSavePausedReason=\'\';saveAllCMS(true, true);}" style="margin-left:4px; background:#111111; color:#ffffff; border:none; padding:5px 11px; border-radius:6px; font-weight:700; font-size:0.75rem; cursor:pointer;">⚠️ Timpa Paksa</button>'
             );
         }
@@ -2983,7 +2987,7 @@
                         showSessionDraftBanner(
                             '<b>📝 Ditemukan draft editan lokal yang belum sempat tersimpan ke Cloud.</b> Pilih tindakan Anda: ' +
                             '<button type="button" onclick="restorePendingDraftChoice()" style="margin-left:8px; background:#111111; color:#ffffff; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.76rem; cursor:pointer;">🔄 Pulihkan Draft & Simpan</button> ' +
-                            '<button type="button" onclick="discardPendingDraftChoice()" style="margin-left:4px; background:#ffffff; color:#111111; border:1px solid #d4d4d8; border:none; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.76rem; cursor:pointer;">☁️ Pakai Data Cloud Terbaru</button>'
+                            '<button type="button" onclick="discardPendingDraftChoice()" style="margin-left:4px; background:#ffffff; color:#111111; border:1px solid #d4d4d8; padding:5px 12px; border-radius:6px; font-weight:700; font-size:0.76rem; cursor:pointer;">☁️ Pakai Data Cloud Terbaru</button>'
                         );
                     } else {
                         cmsData = mergedRemote;
