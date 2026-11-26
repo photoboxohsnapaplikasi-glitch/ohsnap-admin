@@ -11,6 +11,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
     <link rel="icon" type="image/jpeg" href="images/logo-icon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body {
@@ -57,6 +58,12 @@
             background: #ffffff;
         }
         .form-group input:focus { border-color: #111111; box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08); }
+        .turnstile-wrap {
+            margin: 4px 0 14px;
+            display: flex;
+            justify-content: center;
+            min-height: 65px;
+        }
         .btn-login {
             width: 100%;
             background: #111111;
@@ -96,6 +103,9 @@
                 <label>Password</label>
                 <input type="password" id="password" required>
             </div>
+            <div class="turnstile-wrap">
+                <div class="cf-turnstile" id="loginTurnstile" data-sitekey="0x4AAAAAAGTkwAnDGm329rR9" data-theme="light" data-callback="onLoginTurnstileSuccess" data-expired-callback="onLoginTurnstileExpired" data-error-callback="onLoginTurnstileError"></div>
+            </div>
             <button type="submit" class="btn-login" id="btnLoginSubmit">Masuk ke Dashboard</button>
         </form>
         <a href="https://ohsnap.web.id" id="backToMainLink" class="back-link">← Kembali ke Halaman Utama</a>
@@ -114,6 +124,25 @@
 
         let failedCount = 0;
         let lockedUntilTs = 0;
+        let turnstileToken = '';
+
+        window.onLoginTurnstileSuccess = function (token) {
+            turnstileToken = String(token || '').trim();
+        };
+        window.onLoginTurnstileExpired = function () {
+            turnstileToken = '';
+        };
+        window.onLoginTurnstileError = function () {
+            turnstileToken = '';
+        };
+        function resetTurnstile() {
+            turnstileToken = '';
+            try {
+                if (window.turnstile && typeof window.turnstile.reset === 'function') {
+                    window.turnstile.reset();
+                }
+            } catch (e) {}
+        }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -130,11 +159,35 @@
                 return;
             }
 
+            const hiddenInput = document.querySelector('input[name="cf-turnstile-response"]');
+            const activeToken = turnstileToken || (hiddenInput ? String(hiddenInput.value || '').trim() : '');
+            if (!activeToken) {
+                errorBox.textContent = 'Mohon selesaikan verifikasi keamanan Cloudflare terlebih dahulu.';
+                errorBox.style.display = 'block';
+                return;
+            }
+
             btn.textContent = 'Memeriksa Akun...';
             btn.disabled = true;
 
             try {
-                const authRes = await OhSnapCloud.loginAdmin(u, p);
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: u,
+                        password: p,
+                        turnstileToken: activeToken
+                    })
+                });
+                let authRes = null;
+                try { authRes = await res.json(); } catch (pe) {}
+                if (!res.ok && (!authRes || typeof authRes !== 'object')) {
+                    const httpErr = new Error('HTTP ' + res.status);
+                    httpErr.status = res.status;
+                    throw httpErr;
+                }
+
                 btn.textContent = 'Masuk ke Dashboard';
                 btn.disabled = false;
 
@@ -148,16 +201,20 @@
                     else sessionStorage.removeItem('ohsnap_must_change_pw');
                     window.location.replace('admin');
                 } else {
-                    failedCount++;
-                    if (failedCount >= 5) {
-                        lockedUntilTs = Date.now() + 30000;
-                        failedCount = 0;
+                    resetTurnstile();
+                    if (!authRes || !authRes.turnstileError) {
+                        failedCount++;
+                        if (failedCount >= 5) {
+                            lockedUntilTs = Date.now() + 30000;
+                            failedCount = 0;
+                        }
+                        document.getElementById('password').value = '';
                     }
                     errorBox.textContent = (authRes && authRes.error) ? authRes.error : 'Username atau Password salah!';
                     errorBox.style.display = 'block';
-                    document.getElementById('password').value = '';
                 }
             } catch (err) {
+                resetTurnstile();
                 btn.textContent = 'Masuk ke Dashboard';
                 btn.disabled = false;
                 const hint = (err && err.status === 404)
