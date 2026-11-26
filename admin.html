@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/">
     <title>Dashboard Admin - OH SNAP! Photobox</title>
     <meta name="robots" content="noindex, nofollow">
     <meta name="description" content="Dashboard Admin OH SNAP! Photobox.">
@@ -51,6 +52,20 @@
         .menu-btn:hover svg { opacity: 1; }
         .menu-btn.active { background: #111111; color: #ffffff; font-weight: 600; }
         .menu-btn.active svg { opacity: 1; }
+
+        /* Grup menu (dropdown) */
+        .menu-group { display: flex; flex-direction: column; gap: 2px; }
+        .menu-group + .menu-group { margin-top: 4px; }
+        .menu-group-btn {
+            background: transparent; border: none; color: #111111; text-align: left; padding: 9px 12px;
+            border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; letter-spacing: 0.01em;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px; transition: background 0.15s;
+        }
+        .menu-group-btn:hover { background: #f4f4f5; }
+        .menu-group-btn svg { width: 12px; height: 12px; flex-shrink: 0; stroke: currentColor; fill: none; transition: transform 0.18s ease; }
+        .menu-group.open > .menu-group-btn svg { transform: rotate(180deg); }
+        .menu-group-items { display: none; flex-direction: column; gap: 2px; margin: 0 0 2px 16px; padding-left: 8px; border-left: 1px solid var(--border-color); }
+        .menu-group.open > .menu-group-items { display: flex; }
 
         .sidebar-footer { padding: 12px 10px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 6px; }
         .btn-view-site, .btn-logout {
@@ -314,18 +329,33 @@
             <h2>OH SNAP! <span>Admin</span></h2>
         </div>
         <div class="sidebar-menu">
-            <button class="menu-btn active" onclick="switchTab('sec-banner', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5L5 20"/></svg>Banner &amp; Hero</button>
-            <button class="menu-btn" onclick="switchTab('sec-studio', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Suasana Studio</button>
-            <button class="menu-btn" onclick="switchTab('sec-promo', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg>Promo</button>
-            <button class="menu-btn" onclick="switchTab('sec-video', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M22 7l-5 3.5V13.5L22 17V7z"/></svg>Video Feed</button>
-            <button class="menu-btn" onclick="switchTab('sec-layanan', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg>Layanan</button>
-            <button class="menu-btn" onclick="switchTab('sec-frame', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Frame Layout</button>
-            <button class="menu-btn" onclick="switchTab('sec-lokasi', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Lokasi Cabang</button>
-            <button class="menu-btn" onclick="switchTab('sec-resend', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Resend Softcopy</button>
-            <button class="menu-btn" onclick="switchTab('sec-kontak', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Kontak</button>
-            <button class="menu-btn" onclick="switchTab('sec-footer', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="15" x2="21" y2="15"/></svg>Footer</button>
-            <button class="menu-btn" onclick="switchTab('sec-colors', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><circle cx="12" cy="15" r="1"/></svg>Warna Frontend</button>
-            <button class="menu-btn" onclick="switchTab('sec-admins', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Kelola Admin</button>
+            <div class="menu-group">
+                <button type="button" class="menu-group-btn" onclick="toggleMenuGroup(this)" aria-expanded="false">Halaman Utama<svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+                <div class="menu-group-items">
+                <button class="menu-btn active" onclick="switchTab('sec-banner', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5L5 20"/></svg>Banner &amp; Hero</button>
+                <button class="menu-btn" onclick="switchTab('sec-studio', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Suasana Studio</button>
+                <button class="menu-btn" onclick="switchTab('sec-promo', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg>Promo</button>
+                <button class="menu-btn" onclick="switchTab('sec-video', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="M22 7l-5 3.5V13.5L22 17V7z"/></svg>Video Feed</button>
+                </div>
+            </div>
+            <div class="menu-group">
+                <button type="button" class="menu-group-btn" onclick="toggleMenuGroup(this)" aria-expanded="false">Halaman Lain<svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+                <div class="menu-group-items">
+                <button class="menu-btn" onclick="switchTab('sec-layanan', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg>Layanan</button>
+                <button class="menu-btn" onclick="switchTab('sec-frame', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Frame Layout</button>
+                <button class="menu-btn" onclick="switchTab('sec-lokasi', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Lokasi Cabang</button>
+                <button class="menu-btn" onclick="switchTab('sec-resend', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Resend Softcopy</button>
+                <button class="menu-btn" onclick="switchTab('sec-kontak', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Kontak</button>
+                </div>
+            </div>
+            <div class="menu-group">
+                <button type="button" class="menu-group-btn" onclick="toggleMenuGroup(this)" aria-expanded="false">Pengaturan<svg viewBox="0 0 24 24" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+                <div class="menu-group-items">
+                <button class="menu-btn" onclick="switchTab('sec-footer', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="15" x2="21" y2="15"/></svg>Footer</button>
+                <button class="menu-btn" onclick="switchTab('sec-colors', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><circle cx="12" cy="15" r="1"/></svg>Warna Frontend</button>
+                <button class="menu-btn" onclick="switchTab('sec-admins', this, event)"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Kelola Admin</button>
+                </div>
+            </div>
         </div>
         <div class="sidebar-footer">
             <a href="https://ohsnap.web.id" id="viewFrontendLink" target="_blank" class="btn-view-site">Lihat Website</a>
@@ -675,9 +705,48 @@
             window.location.replace('./');
         }
 
+        // Alamat (URL) per menu: /admin/<grup>/<menu>
+        const ADMIN_TAB_ROUTES = {
+            'sec-banner': 'halaman-utama/banner',
+            'sec-studio': 'halaman-utama/suasana-studio',
+            'sec-promo': 'halaman-utama/promo',
+            'sec-video': 'halaman-utama/video-feed',
+            'sec-layanan': 'halaman-lain/layanan',
+            'sec-frame': 'halaman-lain/frame-layout',
+            'sec-lokasi': 'halaman-lain/lokasi-cabang',
+            'sec-resend': 'halaman-lain/resend-softcopy',
+            'sec-kontak': 'halaman-lain/kontak',
+            'sec-footer': 'pengaturan/footer',
+            'sec-colors': 'pengaturan/warna-frontend',
+            'sec-admins': 'pengaturan/kelola-admin'
+        };
+        let adminTabNavFromHistory = false;
+        function adminTabPath(sectionId) {
+            return '/admin/' + (ADMIN_TAB_ROUTES[sectionId] || ADMIN_TAB_ROUTES['sec-banner']);
+        }
+        function adminTabFromPath(pathname) {
+            const p = String(pathname || '').replace(/\/+$/, '');
+            for (const id in ADMIN_TAB_ROUTES) {
+                if (p === '/admin/' + ADMIN_TAB_ROUTES[id]) return id;
+            }
+            return '';
+        }
+        function openMenuGroupFor(btnEl) {
+            const g = btnEl && btnEl.closest ? btnEl.closest('.menu-group') : null;
+            if (!g) return;
+            g.classList.add('open');
+            const h = g.querySelector('.menu-group-btn');
+            if (h) h.setAttribute('aria-expanded', 'true');
+        }
+        function toggleMenuGroup(headerBtn) {
+            const g = headerBtn.parentElement;
+            const isOpen = g.classList.toggle('open');
+            headerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        }
+
         (function() {
-            const savedTab = sessionStorage.getItem('activeAdminTab');
-            if (savedTab) {
+            const savedTab = adminTabFromPath(window.location.pathname) || sessionStorage.getItem('activeAdminTab') || 'sec-banner';
+            {
                 const targetSec = document.getElementById(savedTab);
                 const targetBtn = document.querySelector(`button[onclick*="${savedTab}"]`);
                 if (targetSec && targetBtn) {
@@ -688,6 +757,9 @@
                     const titleText = targetBtn.textContent.replace(/^[^\s]+\s\d+\.\s/, '');
                     const titleEl = document.getElementById('pageTitle');
                     if (titleEl) titleEl.textContent = titleText;
+                    sessionStorage.setItem('activeAdminTab', savedTab);
+                    openMenuGroupFor(targetBtn);
+                    try { history.replaceState({ tab: savedTab }, '', adminTabPath(savedTab)); } catch (e) {}
                 }
             }
         })();
@@ -1357,6 +1429,13 @@
                 document.getElementById('pageTitle').textContent = btnEl.textContent.replace(/^[^\s]+\s\d+\.\s/, '');
             }
             sessionStorage.setItem('activeAdminTab', sectionId);
+            openMenuGroupFor(btnEl);
+            if (!adminTabNavFromHistory) {
+                const newPath = adminTabPath(sectionId);
+                if (window.location.pathname !== newPath) {
+                    try { history.pushState({ tab: sectionId }, '', newPath); } catch (e) {}
+                }
+            }
             document.getElementById('sidebarEl').classList.remove('active');
             initAllRenders();
             if (sectionId === 'sec-admins') {
@@ -1370,6 +1449,15 @@
             }
             if (event) event.preventDefault();
         }
+
+        // Tombol Back/Forward browser: pindah menu sesuai alamat
+        window.addEventListener('popstate', function() {
+            const id = adminTabFromPath(window.location.pathname);
+            if (!id) return;
+            const btn = document.querySelector(`button[onclick*="switchTab('${id}'"]`);
+            adminTabNavFromHistory = true;
+            try { switchTab(id, btn, null); } finally { adminTabNavFromHistory = false; }
+        });
 
         async function clearBannerImg() {
             const page = document.getElementById('bannerPageSelect').value;
