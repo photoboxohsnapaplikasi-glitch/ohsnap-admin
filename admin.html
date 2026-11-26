@@ -736,7 +736,7 @@
             window.location.replace('./');
         }
 
-        // Alamat (URL) per menu: /admin/<grup>/<menu>
+        // Alamat (URL) per menu memakai hash (/admin#<grup>/<menu>) agar aman saat Refresh (F5)
         const ADMIN_TAB_ROUTES = {
             'sec-banner': 'halaman-utama/banner',
             'sec-studio': 'halaman-utama/suasana-studio',
@@ -752,11 +752,20 @@
             'sec-admins': 'pengaturan/kelola-admin'
         };
         let adminTabNavFromHistory = false;
-        function adminTabPath(sectionId) {
-            return '/admin/' + (ADMIN_TAB_ROUTES[sectionId] || ADMIN_TAB_ROUTES['sec-banner']);
+        function adminBasePath() {
+            return /\/admin\.html$/i.test(window.location.pathname) ? '/admin.html' : '/admin';
         }
-        function adminTabFromPath(pathname) {
-            const p = String(pathname || '').replace(/\/+$/, '');
+        function adminTabPath(sectionId) {
+            return adminBasePath() + '#' + (ADMIN_TAB_ROUTES[sectionId] || ADMIN_TAB_ROUTES['sec-banner']);
+        }
+        function adminTabFromLocation() {
+            const h = String(window.location.hash || '').replace(/^#\/?/, '').replace(/\/+$/, '');
+            if (h) {
+                for (const id in ADMIN_TAB_ROUTES) {
+                    if (h === ADMIN_TAB_ROUTES[id]) return id;
+                }
+            }
+            const p = String(window.location.pathname || '').replace(/\/+$/, '');
             for (const id in ADMIN_TAB_ROUTES) {
                 if (p === '/admin/' + ADMIN_TAB_ROUTES[id]) return id;
             }
@@ -776,7 +785,7 @@
         }
 
         (function() {
-            const savedTab = adminTabFromPath(window.location.pathname) || sessionStorage.getItem('activeAdminTab') || 'sec-banner';
+            const savedTab = adminTabFromLocation() || sessionStorage.getItem('activeAdminTab') || 'sec-banner';
             {
                 const targetSec = document.getElementById(savedTab);
                 const targetBtn = document.querySelector(`button[onclick*="${savedTab}"]`);
@@ -1463,7 +1472,8 @@
             openMenuGroupFor(btnEl);
             if (!adminTabNavFromHistory) {
                 const newPath = adminTabPath(sectionId);
-                if (window.location.pathname !== newPath) {
+                const curUrl = window.location.pathname + window.location.hash;
+                if (curUrl !== newPath) {
                     try { history.pushState({ tab: sectionId }, '', newPath); } catch (e) {}
                 }
             }
@@ -1482,13 +1492,17 @@
         }
 
         // Tombol Back/Forward browser: pindah menu sesuai alamat
-        window.addEventListener('popstate', function() {
-            const id = adminTabFromPath(window.location.pathname);
+        function syncTabFromHistory() {
+            const id = adminTabFromLocation();
             if (!id) return;
+            const activeSec = document.querySelector('.admin-section.active');
+            if (activeSec && activeSec.id === id) return;
             const btn = document.querySelector(`button[onclick*="switchTab('${id}'"]`);
             adminTabNavFromHistory = true;
             try { switchTab(id, btn, null); } finally { adminTabNavFromHistory = false; }
-        });
+        }
+        window.addEventListener('popstate', syncTabFromHistory);
+        window.addEventListener('hashchange', syncTabFromHistory);
 
         async function clearBannerImg() {
             const page = document.getElementById('bannerPageSelect').value;
