@@ -1,6 +1,6 @@
 # 🛠️ OH SNAP! Photobox — Dashboard Admin
 
-Dashboard untuk mengelola seluruh konten website **OH SNAP! Photobox** ([ohsnap.web.id](https://ohsnap.web.id)) dan memantau permintaan *Resend Softcopy* tanpa menyentuh kode.
+Dashboard untuk mengelola seluruh konten website **OH SNAP! Photobox** ([web.ohsnap.id](https://web.ohsnap.id)) dan memantau permintaan *Resend Softcopy* tanpa menyentuh kode.
 
 - **Alamat:** `https://admin.ohsnap.web.id` (halaman login) → `/admin/...` (dashboard)
 - **Repo pasangan:** website publik ada di repo terpisah, **ohsnap-frontend**.
