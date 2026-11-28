@@ -1012,8 +1012,7 @@
                 { _uid: 'default-video-1', title: 'Video 1', url: '', linkUrl: '', thumb: '' },
                 { _uid: 'default-video-2', title: 'Video 2', url: '', linkUrl: '', thumb: '' },
                 { _uid: 'default-video-3', title: 'Video 3', url: '', linkUrl: '', thumb: '' },
-                { _uid: 'default-video-4', title: 'Video 4', url: '', linkUrl: '', thumb: '' },
-                { _uid: 'default-video-5', title: 'Video 5', url: '', linkUrl: '', thumb: '' }
+                { _uid: 'default-video-4', title: 'Video 4', url: '', linkUrl: '', thumb: '' }
             ],
             promos: [
                 { _uid: 'default-promo-1', title: 'Promo Pelajar & Mahasiswa', badge: 'HOT PROMO', desc: 'Diskon spesial KTM aktif!', img: '' },
@@ -1985,7 +1984,7 @@
                 const uid = v._uid;
                 const isUp = uploadingItemUids.has(uid);
                 const lockAttr = isUp ? 'disabled style="opacity:0.5;cursor:wait;"' : '';
-                let navHtml = total > 5 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveVideo(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveVideo(${i}, 1)">&gt;</button>` : ''}</div>` : '';
+                let navHtml = total > 4 ? `<div>${i > 0 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveVideo(${i}, -1)">&lt;</button>` : ''}${i < total - 1 ? `<button type="button" class="order-nav-btn" ${lockAttr} onclick="moveVideo(${i}, 1)">&gt;</button>` : ''}</div>` : '';
                 const inputVal = v.url || '';
                 const inputPlaceholder = 'URL video atau pilih file MP4';
                 
@@ -2013,7 +2012,7 @@
         function addVideoItem() { cmsData.videos.push({_uid: genItemUid(), title:'Baru', url:'', linkUrl:''}); persistData(); renderVideos(); }
         async function removeVideo(i) {
             if (uploadingItemUids.size > 0) return alert('Tunggu proses upload selesai terlebih dahulu.');
-            if (cmsData.videos.length <= 5) return alert('Batas minimal Video Feed adalah 5!');
+            if (cmsData.videos.length <= 4) return alert('Batas minimal Video Feed adalah 4!');
             const oldUrl = cmsData.videos[i] && cmsData.videos[i].url;
             const oldThumb = cmsData.videos[i] && cmsData.videos[i].thumb;
             cmsData.videos.splice(i, 1);
