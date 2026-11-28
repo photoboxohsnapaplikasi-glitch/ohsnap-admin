@@ -2094,6 +2094,7 @@
                 cards.push(`<div class="item-card"><h4><span>Promo #${i+1}</span><div style="display:flex;gap:6px;align-items:center;">${navHtml}<button class="btn-remove" ${lockAttr} onclick="removePromo(${i})">Hapus</button></div></h4>
                     <div class="form-group"><label>Judul (ID)</label><input type="text" value="${escAttr(p.title || '')}" oninput="cmsData.promos[${i}].title=this.value; persistData();"></div>
                     <div class="form-group"><label>Judul (EN)</label><input type="text" value="${escAttr(p.titleEn || '')}" oninput="cmsData.promos[${i}].titleEn=this.value; persistData();"></div>
+                    <div class="form-group"><label>Link Judul</label><div class="input-with-clear"><input type="text" value="${escAttr(p.linkUrl || '')}" placeholder="https://..." oninput="cmsData.promos[${i}].linkUrl=this.value.trim(); persistData();"><button type="button" class="btn-clear-input" onclick="cmsData.promos[${i}].linkUrl=''; persistData(); renderPromos();">&times;</button></div></div>
                     <div class="form-group"><label>Badge</label><input type="text" value="${escAttr(p.badge || '')}" oninput="cmsData.promos[${i}].badge=this.value; persistData();"></div>
                     <div class="form-group"><label>Deskripsi (ID)</label><textarea oninput="cmsData.promos[${i}].desc=this.value; persistData();">${escAttr(p.desc || '')}</textarea></div>
                     <div class="form-group"><label>Deskripsi (EN)</label><textarea oninput="cmsData.promos[${i}].descEn=this.value; persistData();">${escAttr(p.descEn || '')}</textarea></div>
@@ -2101,7 +2102,7 @@
             });
             c.innerHTML = cards.join('');
         }
-        function addPromoItem() { cmsData.promos.push({_uid: genItemUid(), title:'Promo Baru', titleEn:'', badge:'PROMO', desc:'', descEn:'', img:''}); persistData(); renderPromos(); }
+        function addPromoItem() { cmsData.promos.push({_uid: genItemUid(), title:'Promo Baru', titleEn:'', linkUrl:'', badge:'PROMO', desc:'', descEn:'', img:''}); persistData(); renderPromos(); }
         async function removePromo(i) {
             if (uploadingItemUids.size > 0) return alert('Tunggu proses upload selesai terlebih dahulu.');
             if (cmsData.promos.length <= 3) return alert('Batas minimal Kelola Promo adalah 3!');
